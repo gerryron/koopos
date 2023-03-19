@@ -1,0 +1,2 @@
+INSERT INTO inventory (id, barcode, item_name, description, quantity, buying_price, selling_price) values (1, 'AA21', 'Item A', 'Item A description', 20, 2800, 3000);
+INSERT INTO inventory (id, barcode, item_name, description, quantity, buying_price, selling_price) values (2, 'AA31', 'Item B', 'Item B description', 8, 8900, 9500);
