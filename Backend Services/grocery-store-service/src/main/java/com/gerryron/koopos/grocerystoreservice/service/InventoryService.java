@@ -57,4 +57,13 @@ public class InventoryService {
                         .build())
                 .build();
     }
+
+    public RestResponse<Item> findItemByBarcode(String barcode) {
+        Item item = inventoryRepository.findByBarcode(barcode).orElseThrow();
+
+        return RestResponse.<Item>builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .data(item)
+                .build();
+    }
 }

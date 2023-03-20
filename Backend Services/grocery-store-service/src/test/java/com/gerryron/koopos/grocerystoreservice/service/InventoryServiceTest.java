@@ -6,6 +6,7 @@ import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import com.gerryron.koopos.grocerystoreservice.repository.InventoryRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,8 +19,11 @@ import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +40,7 @@ class InventoryServiceTest {
     private ArgumentCaptor<InventoryEntity> inventoryEntityArgumentCaptor;
 
     @Test
+    @Tag("createItem")
     void testCreateItem() {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000));
@@ -51,7 +56,8 @@ class InventoryServiceTest {
     }
 
     @Test
-    void testGetPaginatedInventories() {
+    @Tag("findPaginatedInventories")
+    void testFindPaginatedInventories() {
         final Item expectedItem1 = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000));
         final Item expectedItem2 = new Item("AA22", "Item B", "Item B Description",
@@ -71,6 +77,23 @@ class InventoryServiceTest {
         assertEquals(1, actualResult.getDetailPages().getPage());
         assertEquals(10, actualResult.getDetailPages().getRowPerPage());
         assertEquals(2, actualResult.getDetailPages().getTotalData());
+    }
+
+    @Test
+    @Tag("findItemByBarcode")
+    void testFindItemByBarcode() {
+        final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
+                20, new BigDecimal(2000), new BigDecimal(3000));
+        when(inventoryRepository.findByBarcode(anyString()))
+                .thenReturn(Optional.of(expectedItem));
+
+        RestResponse<Item> actualResult = inventoryService.findItemByBarcode(expectedItem.getBarcode());
+
+        assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
+        assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
+        assertEquals(expectedItem.getBarcode(), actualResult.getData().getBarcode());
+        assertEquals(expectedItem.getItemName(), actualResult.getData().getItemName());
+        assertNull(actualResult.getErrorDetails());
     }
 
 }

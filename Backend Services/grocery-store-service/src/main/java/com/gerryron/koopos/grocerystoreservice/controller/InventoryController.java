@@ -30,4 +30,9 @@ public class InventoryController {
     ) {
         return ResponseEntity.ok(inventoryService.findPaginatedInventories(page - 1, size));
     }
+
+    @GetMapping("/{barcode}")
+    public ResponseEntity<RestResponse<Item>> getItemByBarcode(@PathVariable String barcode) {
+        return ResponseEntity.ok(inventoryService.findItemByBarcode(barcode));
+    }
 }

@@ -65,6 +65,25 @@ class InventoryControllerTest {
                 .body("detailPages.totalData", is(2));
     }
 
+    @Test
+    @Sql("classpath:data/db/inventory.sql")
+    void shouldGetItemByBarcodeReturnOK() {
+        given()
+                .pathParam("barcode", "AA21")
+                .when()
+                .get("/api/inventory/{barcode}")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
+                .body("data.barcode", is("AA21"))
+                .body("data.itemName", is("Item A"))
+                .body("detailsError", nullValue());
+
+    }
+
     @BeforeEach
     void setUp() {
         port = webServerApplicationContext.getWebServer().getPort();

@@ -1,5 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.repository;
 
+import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -54,5 +55,15 @@ class InventoryRepositoryTest {
 
         assertEquals(1, inventoryEntities.size());
         assertEquals("Item B", inventoryEntities.get(0).getItemName());
+    }
+
+    @Test
+    @Sql("classpath:data/db/inventory.sql")
+    void testFindByItemName() {
+        final String expectedBarcode = "AA21";
+
+        Item actualResult = inventoryRepository.findByBarcode(expectedBarcode).orElseThrow();
+
+        assertEquals(expectedBarcode, actualResult.getItemName());
     }
 }
