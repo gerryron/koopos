@@ -64,6 +64,6 @@ class InventoryRepositoryTest {
 
         Item actualResult = inventoryRepository.findByBarcode(expectedBarcode).orElseThrow();
 
-        assertEquals(expectedBarcode, actualResult.getItemName());
+        assertEquals(expectedBarcode, actualResult.getBarcode());
     }
 }

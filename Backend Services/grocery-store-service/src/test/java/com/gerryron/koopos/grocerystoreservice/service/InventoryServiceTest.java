@@ -4,6 +4,7 @@ import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
+import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.InventoryRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import org.junit.jupiter.api.Tag;
@@ -21,8 +22,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,7 +42,7 @@ class InventoryServiceTest {
 
     @Test
     @Tag("createItem")
-    void testCreateItem() {
+    void testCreateItem_Success() {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000));
 
@@ -53,6 +54,23 @@ class InventoryServiceTest {
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertEquals(expectedItem, actualResult.getData());
+    }
+
+    @Test
+    @Tag("createItem")
+    void testCreateItem_ItemAlreadyExists() {
+        final String barcode = "AA21";
+        final Item expectedItem = new Item(barcode, "Item A", "Item A Description",
+                20, new BigDecimal(2000), new BigDecimal(3000));
+        final Item existingItem = new Item(barcode, "Item Z", "Item Z Description",
+                5, new BigDecimal(80000), new BigDecimal(85000));
+
+        when(inventoryRepository.findByBarcode(barcode)).thenReturn(Optional.of(existingItem));
+
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> inventoryService.createItem(expectedItem));
+        assertEquals(kooposException.getCode(), ApplicationCode.ITEM_ALREADY_EXISTS.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.ITEM_ALREADY_EXISTS.getMessage());
     }
 
     @Test
@@ -81,7 +99,7 @@ class InventoryServiceTest {
 
     @Test
     @Tag("findItemByBarcode")
-    void testFindItemByBarcode() {
+    void testFindItemByBarcode_Success() {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000));
         when(inventoryRepository.findByBarcode(anyString()))
@@ -94,6 +112,15 @@ class InventoryServiceTest {
         assertEquals(expectedItem.getBarcode(), actualResult.getData().getBarcode());
         assertEquals(expectedItem.getItemName(), actualResult.getData().getItemName());
         assertNull(actualResult.getErrorDetails());
+    }
+
+    @Test
+    @Tag("findItemByBarcode")
+    void testFindItemByBarcode_BarcodeNotFound() {
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> inventoryService.findItemByBarcode(any()));
+        assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
     }
 
 }

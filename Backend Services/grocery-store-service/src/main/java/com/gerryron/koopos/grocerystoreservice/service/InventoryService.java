@@ -5,6 +5,7 @@ import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.dto.ResponseStatus;
 import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
+import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.InventoryRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,9 @@ public class InventoryService {
     }
 
     public RestResponse<Item> createItem(Item item) {
-        // TODO: Tambahkan validasi duplikat nama item
+        inventoryRepository.findByBarcode(item.getBarcode()).ifPresent(s -> {
+            throw new KooposException(ApplicationCode.ITEM_ALREADY_EXISTS);
+        });
 
         inventoryRepository.save(new InventoryEntity(item));
         log.info("Success create: {}", item);
@@ -59,7 +62,8 @@ public class InventoryService {
     }
 
     public RestResponse<Item> findItemByBarcode(String barcode) {
-        Item item = inventoryRepository.findByBarcode(barcode).orElseThrow();
+        Item item = inventoryRepository.findByBarcode(barcode).orElseThrow(() ->
+                new KooposException(ApplicationCode.BARCODE_NOT_FOUND));
 
         return RestResponse.<Item>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))

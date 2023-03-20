@@ -5,6 +5,7 @@ import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +28,7 @@ class InventoryControllerTest {
     private ServletWebServerApplicationContext webServerApplicationContext;
 
     @Test
+    @Tag("saveItem")
     void shouldSaveItemReturnOK() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -48,6 +50,29 @@ class InventoryControllerTest {
     }
 
     @Test
+    @Tag("saveItem")
+    @Sql("classpath:data/db/inventory.sql")
+    void shouldSaveItemReturnItemAlreadyExists() {
+        given()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(new Item("AA21", "Item A", "Item A Description", 20,
+                        new BigDecimal(2800), new BigDecimal(3000)))
+                .log().all()
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .when()
+                .post("/api/inventory")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.ITEM_ALREADY_EXISTS.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.ITEM_ALREADY_EXISTS.getMessage()))
+                .body("data", nullValue())
+                .body("detailsError", nullValue());
+    }
+
+    @Test
+    @Tag("getPaginatedInventories")
     @Sql("classpath:data/db/inventory.sql")
     void shouldGetPaginatedInventoriesReturnOK() {
         given()
@@ -66,6 +91,7 @@ class InventoryControllerTest {
     }
 
     @Test
+    @Tag("getItemByBarcode")
     @Sql("classpath:data/db/inventory.sql")
     void shouldGetItemByBarcodeReturnOK() {
         given()
@@ -80,6 +106,24 @@ class InventoryControllerTest {
                 .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
                 .body("data.barcode", is("AA21"))
                 .body("data.itemName", is("Item A"))
+                .body("detailsError", nullValue());
+
+    }
+
+    @Test
+    @Tag("getItemByBarcode")
+    void shouldGetItemByBarcodeReturnBarcodeNotFound() {
+        given()
+                .pathParam("barcode", "notFoundBarcode")
+                .when()
+                .get("/api/inventory/{barcode}")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.BARCODE_NOT_FOUND.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.BARCODE_NOT_FOUND.getMessage()))
+                .body("data",nullValue())
                 .body("detailsError", nullValue());
 
     }
