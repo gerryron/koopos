@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface InventoryRepository extends JpaRepository<InventoryEntity, Integer> {
     Optional<Item> findByBarcode(String barcode);
+
+    Optional<Item> findByItemName(String itemName);
 }

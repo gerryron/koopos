@@ -31,8 +31,11 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.findPaginatedInventories(page - 1, size));
     }
 
-    @GetMapping("/{barcode}")
-    public ResponseEntity<RestResponse<Item>> getItemByBarcode(@PathVariable String barcode) {
-        return ResponseEntity.ok(inventoryService.findItemByBarcode(barcode));
+    @GetMapping("/item")
+    public ResponseEntity<RestResponse<Item>> getItem(
+            @RequestParam(value = "barcode", defaultValue = "") String barcode,
+            @RequestParam(value = "itemName", defaultValue = "") String itemName
+    ) {
+        return ResponseEntity.ok(inventoryService.findItem(barcode, itemName));
     }
 }

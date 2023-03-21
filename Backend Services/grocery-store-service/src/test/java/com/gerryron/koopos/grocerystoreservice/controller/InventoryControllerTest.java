@@ -112,13 +112,13 @@ class InventoryControllerTest {
     }
 
     @Test
-    @Tag("getItemByBarcode")
+    @Tag("getItem")
     @Sql("classpath:data/db/inventory.sql")
-    void shouldGetItemByBarcodeReturnOK() {
+    void shouldGetItemReturnOK_Barcode() {
         given()
-                .pathParam("barcode", "AA21")
+                .queryParam("barcode", "AA21")
                 .when()
-                .get("/api/inventory/{barcode}")
+                .get("/api/inventory/item")
                 .then()
                 .log().all()
                 .assertThat()
@@ -126,24 +126,41 @@ class InventoryControllerTest {
                 .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
                 .body("data.barcode", is("AA21"))
+                .body("detailsError", nullValue());
+
+    }
+
+    @Test
+    @Tag("getItem")
+    @Sql("classpath:data/db/inventory.sql")
+    void shouldGetItemReturnOK_ItemName() {
+        given()
+                .queryParam("itemName", "Item A")
+                .when()
+                .get("/api/inventory/item")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
                 .body("data.itemName", is("Item A"))
                 .body("detailsError", nullValue());
 
     }
 
     @Test
-    @Tag("getItemByBarcode")
-    void shouldGetItemByBarcodeReturnBarcodeNotFound() {
+    @Tag("getItem")
+    void shouldGetItemReturnInvalidParameter() {
         given()
-                .pathParam("barcode", "notFoundBarcode")
                 .when()
-                .get("/api/inventory/{barcode}")
+                .get("/api/inventory/item")
                 .then()
                 .log().all()
                 .assertThat()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
-                .body("responseStatus.responseCode", is(ApplicationCode.BARCODE_NOT_FOUND.getCode()))
-                .body("responseStatus.responseMessage", is(ApplicationCode.BARCODE_NOT_FOUND.getMessage()))
+                .body("responseStatus.responseCode", is(ApplicationCode.INVALID_PARAMETER.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.INVALID_PARAMETER.getMessage()))
                 .body("data", nullValue())
                 .body("detailsError", nullValue());
 

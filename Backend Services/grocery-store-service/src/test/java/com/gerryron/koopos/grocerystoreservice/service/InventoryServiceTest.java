@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -98,14 +97,14 @@ class InventoryServiceTest {
     }
 
     @Test
-    @Tag("findItemByBarcode")
-    void testFindItemByBarcode_Success() {
+    @Tag("findItem")
+    void testFindItemByBarcode_SuccessFindBarcode() {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000));
         when(inventoryRepository.findByBarcode(anyString()))
                 .thenReturn(Optional.of(expectedItem));
 
-        RestResponse<Item> actualResult = inventoryService.findItemByBarcode(expectedItem.getBarcode());
+        RestResponse<Item> actualResult = inventoryService.findItem(expectedItem.getBarcode(), "");
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
@@ -115,12 +114,47 @@ class InventoryServiceTest {
     }
 
     @Test
-    @Tag("findItemByBarcode")
+    @Tag("findItem")
+    void testFindItemByBarcode_SuccessFindItemName() {
+        final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
+                20, new BigDecimal(2000), new BigDecimal(3000));
+        when(inventoryRepository.findByItemName(anyString()))
+                .thenReturn(Optional.of(expectedItem));
+
+        RestResponse<Item> actualResult = inventoryService.findItem("", expectedItem.getItemName());
+
+        assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
+        assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
+        assertEquals(expectedItem.getBarcode(), actualResult.getData().getBarcode());
+        assertEquals(expectedItem.getItemName(), actualResult.getData().getItemName());
+        assertNull(actualResult.getErrorDetails());
+    }
+
+    @Test
+    @Tag("findItem")
+    void testFindItemByBarcode_InvalidParameter() {
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> inventoryService.findItem("", ""));
+        assertEquals(kooposException.getCode(), ApplicationCode.INVALID_PARAMETER.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.INVALID_PARAMETER.getMessage());
+    }
+
+    @Test
+    @Tag("findItem")
     void testFindItemByBarcode_BarcodeNotFound() {
         KooposException kooposException = assertThrows(KooposException.class,
-                () -> inventoryService.findItemByBarcode(any()));
+                () -> inventoryService.findItem("ASAL", ""));
         assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
         assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @Tag("findItem")
+    void testFindItemByBarcode_ItemNameNotFound() {
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> inventoryService.findItem("", "ASAL"));
+        assertEquals(kooposException.getCode(), ApplicationCode.ITEM_NAME_NOT_FOUND.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.ITEM_NAME_NOT_FOUND.getMessage());
     }
 
 }

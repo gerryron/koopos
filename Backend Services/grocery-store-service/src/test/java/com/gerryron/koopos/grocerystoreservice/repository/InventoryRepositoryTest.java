@@ -59,11 +59,21 @@ class InventoryRepositoryTest {
 
     @Test
     @Sql("classpath:data/db/inventory.sql")
-    void testFindByItemName() {
+    void testFindByBarcode() {
         final String expectedBarcode = "AA21";
 
         Item actualResult = inventoryRepository.findByBarcode(expectedBarcode).orElseThrow();
 
         assertEquals(expectedBarcode, actualResult.getBarcode());
+    }
+
+    @Test
+    @Sql("classpath:data/db/inventory.sql")
+    void testFindByItemName() {
+        final String expectedItemName = "Item A";
+
+        Item actualResult = inventoryRepository.findByItemName(expectedItemName).orElseThrow();
+
+        assertEquals(expectedItemName, actualResult.getItemName());
     }
 }

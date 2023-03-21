@@ -61,9 +61,17 @@ public class InventoryService {
                 .build();
     }
 
-    public RestResponse<Item> findItemByBarcode(String barcode) {
-        Item item = inventoryRepository.findByBarcode(barcode).orElseThrow(() ->
-                new KooposException(ApplicationCode.BARCODE_NOT_FOUND));
+    public RestResponse<Item> findItem(String barcode, String itemName) {
+        Item item;
+        if (barcode.isBlank() && itemName.isBlank()) {
+            throw new KooposException(ApplicationCode.INVALID_PARAMETER);
+        } else if (!barcode.isBlank()) {
+            item = inventoryRepository.findByBarcode(barcode).orElseThrow(() ->
+                    new KooposException(ApplicationCode.BARCODE_NOT_FOUND));
+        } else {
+            item = inventoryRepository.findByItemName(itemName).orElseThrow(() ->
+                    new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND));
+        }
 
         return RestResponse.<Item>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))

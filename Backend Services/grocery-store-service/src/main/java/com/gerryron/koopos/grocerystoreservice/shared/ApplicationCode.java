@@ -9,7 +9,9 @@ public enum ApplicationCode {
     SUCCESS("00", "SUCCESS"),
     VALIDATION_ERROR("01", "Validation error"),
     ITEM_ALREADY_EXISTS("02", "Item already exists"),
-    BARCODE_NOT_FOUND("03", "Barcode not found");
+    INVALID_PARAMETER("03", "Invalid parameter"),
+    BARCODE_NOT_FOUND("04", "Barcode is not found"),
+    ITEM_NAME_NOT_FOUND("05", "Item name is not found");
 
     private final String code;
     private final String message;
