@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -18,8 +19,7 @@ public class InventoryController {
     private InventoryService inventoryService;
 
     @PostMapping
-    public ResponseEntity<RestResponse<Item>> saveItem(@RequestBody Item item) {
-        // TODO: Tambahkan validator untuk request body
+    public ResponseEntity<RestResponse<Item>> saveItem(@RequestBody @Valid Item item) {
         return ResponseEntity.ok(inventoryService.createItem(item));
     }
 

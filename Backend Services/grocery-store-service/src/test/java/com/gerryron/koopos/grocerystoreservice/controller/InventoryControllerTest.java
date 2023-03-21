@@ -72,6 +72,27 @@ class InventoryControllerTest {
     }
 
     @Test
+    @Tag("saveItem")
+    void shouldSaveItemReturnValidationError() {
+        given()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(new Item(null, "", null, -20,
+                        new BigDecimal(0), new BigDecimal(0)))
+                .log().all()
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .when()
+                .post("/api/inventory")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.VALIDATION_ERROR.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.VALIDATION_ERROR.getMessage()))
+                .body("data", nullValue())
+                .body("errorDetails", hasSize(6));
+    }
+
+    @Test
     @Tag("getPaginatedInventories")
     @Sql("classpath:data/db/inventory.sql")
     void shouldGetPaginatedInventoriesReturnOK() {
@@ -123,7 +144,7 @@ class InventoryControllerTest {
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .body("responseStatus.responseCode", is(ApplicationCode.BARCODE_NOT_FOUND.getCode()))
                 .body("responseStatus.responseMessage", is(ApplicationCode.BARCODE_NOT_FOUND.getMessage()))
-                .body("data",nullValue())
+                .body("data", nullValue())
                 .body("detailsError", nullValue());
 
     }
