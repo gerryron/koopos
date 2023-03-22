@@ -1,25 +1,50 @@
 package com.gerryron.koopos.grocerystoreservice.dto;
 
-import lombok.Value;
+import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import javax.validation.Valid;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Item {
     @NotNull
-    String barcode;
+    private String barcode;
     @NotBlank
-    String itemName;
+    private String itemName;
     @NotNull
-    String description;
+    private String description;
     @PositiveOrZero
-    Integer quantity;
+    private Integer quantity;
     @DecimalMin(value = "0.0", inclusive = false)
-    BigDecimal buyingPrice;
+    private BigDecimal buyingPrice;
     @DecimalMin(value = "0.0", inclusive = false)
-    BigDecimal sellingPrice;
+    private BigDecimal sellingPrice;
+
+    @Valid
+    private Set<Category> categories;
+
+    public Item(InventoryEntity inventoryEntity) {
+        this.barcode = inventoryEntity.getBarcode();
+        this.itemName = inventoryEntity.getItemName();
+        this.description = inventoryEntity.getDescription();
+        this.quantity = inventoryEntity.getQuantity();
+        this.buyingPrice = inventoryEntity.getBuyingPrice();
+        this.sellingPrice = inventoryEntity.getSellingPrice();
+        if (null != inventoryEntity.getCategories()) {
+            this.categories = inventoryEntity.getCategories().stream()
+                    .map(categoryEntity -> new Category(categoryEntity.getName()))
+                    .collect(Collectors.toSet());
+        }
+    }
 }

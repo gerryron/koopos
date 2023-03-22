@@ -2,23 +2,31 @@ package com.gerryron.koopos.grocerystoreservice.entity;
 
 
 import com.gerryron.koopos.grocerystoreservice.dto.Category;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "category")
+@Table(name = "category", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "name", name = "name")
+})
 public class CategoryEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Column(nullable = false)
     private String name;
     private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
+
+    @ManyToMany(mappedBy = "categories")
+    private Set<InventoryEntity> inventories;
 
     public CategoryEntity(Category category) {
         this.name = category.getName();
@@ -27,6 +35,5 @@ public class CategoryEntity {
     @PrePersist
     void preInsert() {
         this.createdDate = LocalDateTime.now();
-        this.updatedDate = LocalDateTime.now();
     }
 }

@@ -1,6 +1,7 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
 
+import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import org.junit.jupiter.api.AfterEach;
@@ -16,6 +17,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
@@ -33,7 +35,7 @@ class InventoryControllerTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(new Item("AA21", "Item A", "Item A Description", 20,
-                        new BigDecimal(2800), new BigDecimal(3000)))
+                        new BigDecimal(2800), new BigDecimal(3000), null))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()
@@ -51,12 +53,36 @@ class InventoryControllerTest {
 
     @Test
     @Tag("saveItem")
+    void shouldSaveItemWithCategoriesReturnOK() {
+        Item expectedItem = new Item("AA21", "Item A", "Item A Description",
+                20, new BigDecimal(2800), new BigDecimal(3000), null);
+        expectedItem.setCategories(Collections.singleton(new Category("Category A")));
+
+        given()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(expectedItem)
+                .log().all()
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .when()
+                .post("/api/inventory")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
+                .body("data.itemName", is(expectedItem.getItemName()))
+                .body("data.quantity", is(expectedItem.getQuantity()));
+    }
+
+    @Test
+    @Tag("saveItem")
     @Sql("classpath:data/db/inventory.sql")
     void shouldSaveItemReturnItemAlreadyExists() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(new Item("AA21", "Item A", "Item A Description", 20,
-                        new BigDecimal(2800), new BigDecimal(3000)))
+                        new BigDecimal(2800), new BigDecimal(3000), null))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()
@@ -77,7 +103,7 @@ class InventoryControllerTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .body(new Item(null, "", null, -20,
-                        new BigDecimal(0), new BigDecimal(0)))
+                        new BigDecimal(0), new BigDecimal(0), null))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()

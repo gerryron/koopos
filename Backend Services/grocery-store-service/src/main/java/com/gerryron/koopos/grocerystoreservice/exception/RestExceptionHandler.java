@@ -22,7 +22,8 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(KooposException.class)
     public ResponseEntity<RestResponse<Object>> handleKooposException(HttpServletRequest request, KooposException e) {
-        log.warn("KooposException occurred:: URL= {} message= {}-{}", request.getRequestURL(), e.getCode(), e.getMessage());
+        log.warn("KooposException occurred:: Method= {} URL= {} message= {}-{}", request.getMethod(), request.getRequestURL(),
+                e.getCode(), e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(RestResponse.builder()
                         .responseStatus(new ResponseStatus(e.getCode(), e.getMessage()))
@@ -33,7 +34,8 @@ public class RestExceptionHandler {
     public ResponseEntity<RestResponse<Object>> handleMethodArgumentNotValidException(
             HttpServletRequest request,
             MethodArgumentNotValidException e) {
-        log.warn("MethodArgumentNotValidException occurred:: URL= {} message= {}", request.getRequestURL(), e.getMessage());
+        log.warn("MethodArgumentNotValidException occurred:: Method: {} URL= {} message= {}", request.getMethod(),
+                request.getRequestURL(), e.getMessage());
         List<ErrorDetail> errorDetails = new ArrayList<>();
         for (FieldError fieldError : e.getFieldErrors()) {
             errorDetails.add(ErrorDetail.builder()

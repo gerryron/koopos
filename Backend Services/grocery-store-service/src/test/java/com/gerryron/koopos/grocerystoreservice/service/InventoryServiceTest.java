@@ -1,8 +1,10 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
+import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
+import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.InventoryRepository;
@@ -19,19 +21,22 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryServiceTest {
 
     @Mock
     private InventoryRepository inventoryRepository;
+    @Mock
+    private CategoryService categoryService;
 
     @InjectMocks
     private InventoryService inventoryService;
@@ -41,9 +46,28 @@ class InventoryServiceTest {
 
     @Test
     @Tag("createItem")
-    void testCreateItem_Success() {
+    void testCreateItem_SuccessWithoutCategories() {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
-                20, new BigDecimal(2000), new BigDecimal(3000));
+                20, new BigDecimal(2000), new BigDecimal(3000), null);
+
+        RestResponse<Item> actualResult = inventoryService.createItem(expectedItem);
+
+        verify(inventoryRepository).save(inventoryEntityArgumentCaptor.capture());
+        InventoryEntity valueCaptor = inventoryEntityArgumentCaptor.getValue();
+        assertEquals(expectedItem.getItemName(), valueCaptor.getItemName());
+        assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
+        assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
+        assertEquals(expectedItem, actualResult.getData());
+    }
+
+    @Test
+    @Tag("createItem")
+    void testCreateItem_SuccessWithCategories() {
+        Category expectedCategory = new Category("Category A");
+        Item expectedItem = new Item("AA21", "Item A", "Item A Description",
+                20, new BigDecimal(2000), new BigDecimal(3000),
+                Collections.singleton(expectedCategory));
+        when(categoryService.getCategoryEntityIfExists(any())).thenReturn(new CategoryEntity(expectedCategory));
 
         RestResponse<Item> actualResult = inventoryService.createItem(expectedItem);
 
@@ -60,9 +84,9 @@ class InventoryServiceTest {
     void testCreateItem_ItemAlreadyExists() {
         final String barcode = "AA21";
         final Item expectedItem = new Item(barcode, "Item A", "Item A Description",
-                20, new BigDecimal(2000), new BigDecimal(3000));
+                20, new BigDecimal(2000), new BigDecimal(3000), null);
         final Item existingItem = new Item(barcode, "Item Z", "Item Z Description",
-                5, new BigDecimal(80000), new BigDecimal(85000));
+                5, new BigDecimal(80000), new BigDecimal(85000), null);
 
         when(inventoryRepository.findByBarcode(barcode)).thenReturn(Optional.of(existingItem));
 
@@ -76,9 +100,9 @@ class InventoryServiceTest {
     @Tag("findPaginatedInventories")
     void testFindPaginatedInventories() {
         final Item expectedItem1 = new Item("AA21", "Item A", "Item A Description",
-                20, new BigDecimal(2000), new BigDecimal(3000));
+                20, new BigDecimal(2000), new BigDecimal(3000), null);
         final Item expectedItem2 = new Item("AA22", "Item B", "Item B Description",
-                20, new BigDecimal(2000), new BigDecimal(3000));
+                20, new BigDecimal(2000), new BigDecimal(3000), null);
         List<InventoryEntity> expectedResult = List.of(new InventoryEntity(expectedItem1),
                 new InventoryEntity(expectedItem2));
         when(inventoryRepository.findAll(PageRequest.of(0, 10)))
@@ -100,7 +124,7 @@ class InventoryServiceTest {
     @Tag("findItem")
     void testFindItemByBarcode_SuccessFindBarcode() {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
-                20, new BigDecimal(2000), new BigDecimal(3000));
+                20, new BigDecimal(2000), new BigDecimal(3000), null);
         when(inventoryRepository.findByBarcode(anyString()))
                 .thenReturn(Optional.of(expectedItem));
 
@@ -117,7 +141,7 @@ class InventoryServiceTest {
     @Tag("findItem")
     void testFindItemByBarcode_SuccessFindItemName() {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
-                20, new BigDecimal(2000), new BigDecimal(3000));
+                20, new BigDecimal(2000), new BigDecimal(3000), null);
         when(inventoryRepository.findByItemName(anyString()))
                 .thenReturn(Optional.of(expectedItem));
 

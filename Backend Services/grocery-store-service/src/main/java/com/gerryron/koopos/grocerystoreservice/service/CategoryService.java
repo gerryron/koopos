@@ -39,4 +39,9 @@ public class CategoryService {
                         .build())
                 .build();
     }
+
+    public CategoryEntity getCategoryEntityIfExists(CategoryEntity categoryEntity) {
+        CategoryEntity existingCategory = categoryRepository.findFirstByName(categoryEntity.getName());
+        return existingCategory != null ? existingCategory : categoryEntity;
+    }
 }

@@ -1,10 +1,8 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
 import com.gerryron.koopos.grocerystoreservice.dto.Category;
-import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
-import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import org.junit.jupiter.api.Tag;
@@ -50,6 +48,17 @@ public class CategoryServiceTest {
         assertEquals(1, actualResult.getDetailPages().getPage());
         assertEquals(10, actualResult.getDetailPages().getRowPerPage());
         assertEquals(2, actualResult.getDetailPages().getTotalData());
+    }
+
+    @Test
+    @Tag("getCategoryEntityIfExists")
+    void testGetCategoryEntityIfExists_ReturnExpected() {
+        final String expectedCategoryName = "Category A";
+        final CategoryEntity expectedCategoryEntity = new CategoryEntity(new Category(expectedCategoryName));
+        when(categoryRepository.findFirstByName(expectedCategoryName)).thenReturn(expectedCategoryEntity);
+
+        CategoryEntity existingCategory = categoryService.getCategoryEntityIfExists(expectedCategoryEntity);
+        assertEquals(expectedCategoryEntity, existingCategory);
     }
 }
 

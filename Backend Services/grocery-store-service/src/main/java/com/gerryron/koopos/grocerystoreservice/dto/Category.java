@@ -1,8 +1,21 @@
 package com.gerryron.koopos.grocerystoreservice.dto;
 
-import lombok.Value;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+import javax.validation.constraints.NotBlank;
+import java.util.Set;
+
+@Data
+@NoArgsConstructor
 public class Category {
-    String name;
+    @NotBlank
+    private String name;
+    @JsonIgnore
+    private Set<Item> items;
+
+    public Category(String name) {
+        this.name = name;
+    }
 }
