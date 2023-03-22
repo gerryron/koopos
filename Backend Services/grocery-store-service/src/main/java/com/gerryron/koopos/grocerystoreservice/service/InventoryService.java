@@ -64,6 +64,7 @@ public class InventoryService {
     public RestResponse<Item> findItem(String barcode, String itemName) {
         Item item;
         if (barcode.isBlank() && itemName.isBlank()) {
+            log.warn("Invalid Parameter: barcode & itemName is blank");
             throw new KooposException(ApplicationCode.INVALID_PARAMETER);
         } else if (!barcode.isBlank()) {
             item = inventoryRepository.findByBarcode(barcode).orElseThrow(() ->

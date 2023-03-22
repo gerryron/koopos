@@ -36,7 +36,7 @@ class InventoryRepositoryTest {
     @Test
     void testSave() {
         InventoryEntity inventoryEntity = new InventoryEntity();
-        inventoryEntity.setInventoryId(3);
+        inventoryEntity.setId(3);
         inventoryEntity.setItemName("Item C");
         inventoryRepository.save(inventoryEntity);
 

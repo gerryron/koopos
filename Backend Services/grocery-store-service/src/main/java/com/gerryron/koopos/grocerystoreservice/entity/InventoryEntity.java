@@ -14,9 +14,8 @@ import java.time.LocalDateTime;
 @Table(name = "inventory")
 public class InventoryEntity {
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer inventoryId;
+    private Integer id;
     private String barcode;
     private String itemName;
     @Column(columnDefinition = "text")
