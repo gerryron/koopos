@@ -45,4 +45,9 @@ public class InventoryController {
             @RequestBody @Valid Item item) {
         return ResponseEntity.ok((inventoryService.updateItem(barcode, item)));
     }
+
+    @DeleteMapping("/item/{barcode}")
+    public ResponseEntity<RestResponse<Object>> deleteItem(@PathVariable(value = "barcode") String barcode) {
+        return ResponseEntity.ok((inventoryService.deleteItem(barcode)));
+    }
 }

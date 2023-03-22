@@ -65,8 +65,8 @@ class InventoryServiceTest {
         Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000),
                 Collections.singleton(expectedCategory));
-        when(categoryService.getCategoryEntityIfExists(any())).thenReturn(new CategoryEntity(expectedCategory));
 
+        when(categoryService.getCategoryEntityIfExists(any())).thenReturn(new CategoryEntity(expectedCategory));
         RestResponse<Item> actualResult = inventoryService.createItem(expectedItem);
 
         verify(inventoryRepository).save(inventoryEntityArgumentCaptor.capture());
@@ -103,9 +103,9 @@ class InventoryServiceTest {
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
         List<InventoryEntity> expectedResult = List.of(new InventoryEntity(expectedItem1),
                 new InventoryEntity(expectedItem2));
+
         when(inventoryRepository.findAll(PageRequest.of(0, 10)))
                 .thenReturn(new PageImpl<>(expectedResult));
-
         PaginatedResponse<List<Item>> actualResult = inventoryService.findPaginatedInventories(0, 10);
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
@@ -123,9 +123,9 @@ class InventoryServiceTest {
     void testFindItemByBarcode_SuccessFindBarcode() {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
+
         when(inventoryRepository.findByBarcode(anyString()))
                 .thenReturn(Optional.of(new InventoryEntity(expectedItem)));
-
         RestResponse<Item> actualResult = inventoryService.findItem(expectedItem.getBarcode(), "");
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
@@ -140,9 +140,9 @@ class InventoryServiceTest {
     void testFindItemByBarcode_SuccessFindItemName() {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
+
         when(inventoryRepository.findByItemName(anyString()))
                 .thenReturn(Optional.of(new InventoryEntity(expectedItem)));
-
         RestResponse<Item> actualResult = inventoryService.findItem("", expectedItem.getItemName());
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
@@ -190,9 +190,9 @@ class InventoryServiceTest {
                 20, new BigDecimal(2000), new BigDecimal(3000), categories);
         final Item updatedItem = new Item(barcode, "Item A", "Item A Description Updated",
                 16, new BigDecimal(2000), new BigDecimal(3000), Collections.singleton("Category B"));
+
         when(inventoryRepository.findByBarcode(barcode)).thenReturn(Optional.of(new InventoryEntity(item)));
         when(inventoryRepository.save(any())).thenReturn(new InventoryEntity(updatedItem));
-
         RestResponse<Item> actualResult = inventoryService.updateItem(barcode, item);
 
         assertEquals(actualResult.getResponseStatus().getResponseCode(), ApplicationCode.SUCCESS.getCode());
@@ -212,4 +212,29 @@ class InventoryServiceTest {
         assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
     }
 
+    @Test
+    @Tag("deleteItem")
+    void testDeleteItem_SUCCESS() {
+        final String barcode = "AA21";
+        final Item item = new Item(barcode, "Item A", "Item A Description",
+                20, new BigDecimal(2000), new BigDecimal(3000), Collections.singleton("Category A"));
+
+        when(inventoryRepository.findByBarcode(barcode)).thenReturn(Optional.of(new InventoryEntity(item)));
+        RestResponse<Object> actualResult = inventoryService.deleteItem(barcode);
+
+        verify(inventoryRepository).delete(inventoryEntityArgumentCaptor.capture());
+        InventoryEntity valueCaptor = inventoryEntityArgumentCaptor.getValue();
+        assertEquals(actualResult.getResponseStatus().getResponseCode(), ApplicationCode.SUCCESS.getCode());
+        assertEquals(actualResult.getResponseStatus().getResponseMessage(), ApplicationCode.SUCCESS.getMessage());
+        assertEquals(valueCaptor.getCategories().size(), 0);
+    }
+
+    @Test
+    @Tag("deleteItem")
+    void testDeleteItem_BARCODE_NOT_FOUND() {
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> inventoryService.updateItem("ASAL", new Item()));
+        assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
+    }
 }

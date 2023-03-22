@@ -119,4 +119,15 @@ public class InventoryService {
                 .data(new Item(updatedInventory))
                 .build();
     }
+
+    public RestResponse<Object> deleteItem(String barcode) {
+        InventoryEntity existingInventory = inventoryRepository.findByBarcode(barcode).orElseThrow(() ->
+                new KooposException(ApplicationCode.BARCODE_NOT_FOUND));
+        existingInventory.getCategories().clear();
+
+        inventoryRepository.delete(existingInventory);
+        return RestResponse.builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .build();
+    }
 }

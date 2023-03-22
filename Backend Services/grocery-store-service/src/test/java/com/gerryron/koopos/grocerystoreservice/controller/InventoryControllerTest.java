@@ -220,6 +220,27 @@ class InventoryControllerTest {
                 .body("detailsError", nullValue());
     }
 
+    @Test
+    @Tag("deleteItem")
+    @Sql("classpath:data/db/inventory.sql")
+    void shouldDeleteItemReturnSuccess() {
+        given()
+                .pathParam("barcode", "AA21")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .log().all()
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .when()
+                .delete("/api/inventory/item/{barcode}")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
+                .body("data", nullValue())
+                .body("detailsError", nullValue());
+    }
+
     @BeforeEach
     void setUp() {
         port = webServerApplicationContext.getWebServer().getPort();
