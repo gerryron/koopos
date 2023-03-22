@@ -1,7 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import org.junit.jupiter.api.AfterEach;
@@ -56,7 +55,7 @@ class InventoryControllerTest {
     void shouldSaveItemWithCategoriesReturnOK() {
         Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2800), new BigDecimal(3000), null);
-        expectedItem.setCategories(Collections.singleton(new Category("Category A")));
+        expectedItem.setCategories(Collections.singleton("Category A"));
 
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)

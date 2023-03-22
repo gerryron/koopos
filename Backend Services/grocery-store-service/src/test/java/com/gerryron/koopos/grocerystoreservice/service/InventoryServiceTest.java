@@ -1,6 +1,5 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
@@ -28,7 +27,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryServiceTest {
@@ -63,7 +63,7 @@ class InventoryServiceTest {
     @Test
     @Tag("createItem")
     void testCreateItem_SuccessWithCategories() {
-        Category expectedCategory = new Category("Category A");
+        final String expectedCategory = "Category A";
         Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000),
                 Collections.singleton(expectedCategory));

@@ -1,6 +1,5 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<PaginatedResponse<List<Category>>> getPaginatedCategories(
+    public ResponseEntity<PaginatedResponse<List<String>>> getPaginatedCategories(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {

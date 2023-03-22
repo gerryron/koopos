@@ -39,7 +39,7 @@ public class InventoryService {
         InventoryEntity inventoryEntity = new InventoryEntity(item);
         if (null != item.getCategories()) {
             Set<CategoryEntity> categoryEntities = new HashSet<>();
-            for (Category category : item.getCategories()) {
+            for (String category : item.getCategories()) {
                 CategoryEntity categoryEntity = new CategoryEntity(category);
                 categoryEntities.add(categoryService.getCategoryEntityIfExists(categoryEntity));
             }

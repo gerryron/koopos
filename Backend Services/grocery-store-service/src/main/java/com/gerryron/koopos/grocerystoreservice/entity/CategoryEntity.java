@@ -1,7 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.entity;
 
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,8 +27,8 @@ public class CategoryEntity {
     @ManyToMany(mappedBy = "categories")
     private Set<InventoryEntity> inventories;
 
-    public CategoryEntity(Category category) {
-        this.name = category.getName();
+    public CategoryEntity(String categoryName) {
+        this.name = categoryName;
     }
 
     @PrePersist

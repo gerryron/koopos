@@ -1,11 +1,11 @@
 package com.gerryron.koopos.grocerystoreservice.dto;
 
+import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.Valid;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -31,8 +31,7 @@ public class Item {
     @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal sellingPrice;
 
-    @Valid
-    private Set<Category> categories;
+    private Set<String> categories;
 
     public Item(InventoryEntity inventoryEntity) {
         this.barcode = inventoryEntity.getBarcode();
@@ -43,7 +42,7 @@ public class Item {
         this.sellingPrice = inventoryEntity.getSellingPrice();
         if (null != inventoryEntity.getCategories()) {
             this.categories = inventoryEntity.getCategories().stream()
-                    .map(categoryEntity -> new Category(categoryEntity.getName()))
+                    .map(CategoryEntity::getName)
                     .collect(Collectors.toSet());
         }
     }

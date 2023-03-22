@@ -1,6 +1,5 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
@@ -31,14 +30,14 @@ public class CategoryServiceTest {
     @Test
     @Tag("findPaginatedCategories")
     void testFindPaginatedCategories() {
-        final Category expectedCategory1 = new Category("Category A");
-        final Category expectedCategory2 = new Category("Category B");
+        final String expectedCategory1 = "Category A";
+        final String expectedCategory2 = "Category B";
         List<CategoryEntity> expectedResult = List.of(new CategoryEntity(expectedCategory1),
                 new CategoryEntity(expectedCategory2));
         when(categoryRepository.findAll(PageRequest.of(0, 10)))
                 .thenReturn(new PageImpl<>(expectedResult));
 
-        PaginatedResponse<List<Category>> actualResult = categoryService.findPaginatedCategories(0, 10);
+        PaginatedResponse<List<String>> actualResult = categoryService.findPaginatedCategories(0, 10);
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
@@ -54,7 +53,7 @@ public class CategoryServiceTest {
     @Tag("getCategoryEntityIfExists")
     void testGetCategoryEntityIfExists_ReturnExpected() {
         final String expectedCategoryName = "Category A";
-        final CategoryEntity expectedCategoryEntity = new CategoryEntity(new Category(expectedCategoryName));
+        final CategoryEntity expectedCategoryEntity = new CategoryEntity(expectedCategoryName);
         when(categoryRepository.findFirstByName(expectedCategoryName)).thenReturn(expectedCategoryEntity);
 
         CategoryEntity existingCategory = categoryService.getCategoryEntityIfExists(expectedCategoryEntity);

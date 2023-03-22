@@ -1,6 +1,5 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.dto.ResponseStatus;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
@@ -24,13 +23,13 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    public PaginatedResponse<List<Category>> findPaginatedCategories(int page, int size) {
+    public PaginatedResponse<List<String>> findPaginatedCategories(int page, int size) {
         Page<CategoryEntity> categoryEntities = categoryRepository.findAll(PageRequest.of(page, size));
 
-        return PaginatedResponse.<List<Category>>builder()
+        return PaginatedResponse.<List<String>>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .data(categoryEntities.stream()
-                        .map(categoryEntity -> new Category(categoryEntity.getName()))
+                        .map(CategoryEntity::getName)
                         .collect(Collectors.toList()))
                 .detailPages(PaginatedResponse.PagingMetadata.builder()
                         .page(categoryEntities.getNumber() + 1)
