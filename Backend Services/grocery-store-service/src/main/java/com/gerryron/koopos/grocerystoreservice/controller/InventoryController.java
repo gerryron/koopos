@@ -38,4 +38,11 @@ public class InventoryController {
     ) {
         return ResponseEntity.ok(inventoryService.findItem(barcode, itemName));
     }
+
+    @PutMapping("/item/{barcode}")
+    public ResponseEntity<RestResponse<Item>> putItem(
+            @PathVariable(value = "barcode") String barcode,
+            @RequestBody @Valid Item item) {
+        return ResponseEntity.ok((inventoryService.updateItem(barcode, item)));
+    }
 }

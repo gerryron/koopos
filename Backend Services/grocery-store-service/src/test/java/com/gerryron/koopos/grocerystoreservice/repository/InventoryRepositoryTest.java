@@ -1,6 +1,5 @@
 package com.gerryron.koopos.grocerystoreservice.repository;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -62,7 +61,7 @@ class InventoryRepositoryTest {
     void testFindByBarcode() {
         final String expectedBarcode = "AA21";
 
-        Item actualResult = inventoryRepository.findByBarcode(expectedBarcode).orElseThrow();
+        InventoryEntity actualResult = inventoryRepository.findByBarcode(expectedBarcode).orElseThrow();
 
         assertEquals(expectedBarcode, actualResult.getBarcode());
     }
@@ -72,7 +71,7 @@ class InventoryRepositoryTest {
     void testFindByItemName() {
         final String expectedItemName = "Item A";
 
-        Item actualResult = inventoryRepository.findByItemName(expectedItemName).orElseThrow();
+        InventoryEntity actualResult = inventoryRepository.findByItemName(expectedItemName).orElseThrow();
 
         assertEquals(expectedItemName, actualResult.getItemName());
     }

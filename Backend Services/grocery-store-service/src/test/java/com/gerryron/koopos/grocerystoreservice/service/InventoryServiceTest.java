@@ -20,9 +20,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -88,7 +86,7 @@ class InventoryServiceTest {
         final Item existingItem = new Item(barcode, "Item Z", "Item Z Description",
                 5, new BigDecimal(80000), new BigDecimal(85000), null);
 
-        when(inventoryRepository.findByBarcode(barcode)).thenReturn(Optional.of(existingItem));
+        when(inventoryRepository.findByBarcode(barcode)).thenReturn(Optional.of(new InventoryEntity(existingItem)));
 
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> inventoryService.createItem(expectedItem));
@@ -126,7 +124,7 @@ class InventoryServiceTest {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
         when(inventoryRepository.findByBarcode(anyString()))
-                .thenReturn(Optional.of(expectedItem));
+                .thenReturn(Optional.of(new InventoryEntity(expectedItem)));
 
         RestResponse<Item> actualResult = inventoryService.findItem(expectedItem.getBarcode(), "");
 
@@ -143,7 +141,7 @@ class InventoryServiceTest {
         final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
         when(inventoryRepository.findByItemName(anyString()))
-                .thenReturn(Optional.of(expectedItem));
+                .thenReturn(Optional.of(new InventoryEntity(expectedItem)));
 
         RestResponse<Item> actualResult = inventoryService.findItem("", expectedItem.getItemName());
 
@@ -179,6 +177,39 @@ class InventoryServiceTest {
                 () -> inventoryService.findItem("", "ASAL"));
         assertEquals(kooposException.getCode(), ApplicationCode.ITEM_NAME_NOT_FOUND.getCode());
         assertEquals(kooposException.getMessage(), ApplicationCode.ITEM_NAME_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @Tag("updateItem")
+    void testUpdateItem_SUCCESS() {
+        String barcode = "AA21";
+        Set<String> categories = new HashSet<>();
+        categories.add("Category A");
+        categories.add("Category B");
+        final Item item = new Item(barcode, "Item A", "Item A Description",
+                20, new BigDecimal(2000), new BigDecimal(3000), categories);
+        final Item updatedItem = new Item(barcode, "Item A", "Item A Description Updated",
+                16, new BigDecimal(2000), new BigDecimal(3000), Collections.singleton("Category B"));
+        when(inventoryRepository.findByBarcode(barcode)).thenReturn(Optional.of(new InventoryEntity(item)));
+        when(inventoryRepository.save(any())).thenReturn(new InventoryEntity(updatedItem));
+
+        RestResponse<Item> actualResult = inventoryService.updateItem(barcode, item);
+
+        assertEquals(actualResult.getResponseStatus().getResponseCode(), ApplicationCode.SUCCESS.getCode());
+        assertEquals(actualResult.getResponseStatus().getResponseMessage(), ApplicationCode.SUCCESS.getMessage());
+        assertEquals(actualResult.getData().getBarcode(), barcode);
+        assertEquals(actualResult.getData().getDescription(), updatedItem.getDescription());
+        assertEquals(actualResult.getData().getCategories().size(), updatedItem.getCategories().size());
+        assertNull(actualResult.getErrorDetails());
+    }
+
+    @Test
+    @Tag("updateItem")
+    void testUpdateItem_BARCODE_NOT_FOUND() {
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> inventoryService.updateItem("ASAL", new Item()));
+        assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
     }
 
 }

@@ -1,6 +1,9 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.dto.*;
+import com.gerryron.koopos.grocerystoreservice.dto.Item;
+import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
+import com.gerryron.koopos.grocerystoreservice.dto.ResponseStatus;
+import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
@@ -79,16 +82,41 @@ public class InventoryService {
             log.warn("Invalid Parameter: barcode & itemName is blank");
             throw new KooposException(ApplicationCode.INVALID_PARAMETER);
         } else if (!barcode.isBlank()) {
-            item = inventoryRepository.findByBarcode(barcode).orElseThrow(() ->
-                    new KooposException(ApplicationCode.BARCODE_NOT_FOUND));
+            item = new Item(inventoryRepository.findByBarcode(barcode).orElseThrow(() ->
+                    new KooposException(ApplicationCode.BARCODE_NOT_FOUND)));
         } else {
-            item = inventoryRepository.findByItemName(itemName).orElseThrow(() ->
-                    new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND));
+            item = new Item(inventoryRepository.findByItemName(itemName).orElseThrow(() ->
+                    new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND)));
         }
 
         return RestResponse.<Item>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .data(item)
+                .build();
+    }
+
+    public RestResponse<Item> updateItem(String barcode, Item item) {
+        InventoryEntity existingInventory = inventoryRepository.findByBarcode(barcode).orElseThrow(() ->
+                new KooposException(ApplicationCode.BARCODE_NOT_FOUND));
+        existingInventory.setItemName(item.getItemName());
+        existingInventory.setDescription(item.getDescription());
+        existingInventory.setQuantity(item.getQuantity());
+        existingInventory.setBuyingPrice(item.getBuyingPrice());
+        existingInventory.setSellingPrice(item.getSellingPrice());
+        existingInventory.getCategories().clear();
+        if (null != item.getCategories()) {
+            Set<CategoryEntity> categoryEntities = new HashSet<>();
+            for (String category : item.getCategories()) {
+                CategoryEntity categoryEntity = new CategoryEntity(category);
+                categoryEntities.add(categoryService.getCategoryEntityIfExists(categoryEntity));
+            }
+            existingInventory.setCategories(categoryEntities);
+        }
+
+        final InventoryEntity updatedInventory = inventoryRepository.save(existingInventory);
+        return RestResponse.<Item>builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .data(new Item(updatedInventory))
                 .build();
     }
 }

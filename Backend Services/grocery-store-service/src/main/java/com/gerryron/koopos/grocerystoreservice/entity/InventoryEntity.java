@@ -31,7 +31,7 @@ public class InventoryEntity {
     private LocalDateTime updatedDate;
 
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "inventory_categories",
             joinColumns = @JoinColumn(name = "inventory_id", referencedColumnName = "id"),

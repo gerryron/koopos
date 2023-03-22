@@ -191,6 +191,35 @@ class InventoryControllerTest {
 
     }
 
+    @Test
+    @Tag("putItem")
+    @Sql("classpath:data/db/inventory.sql")
+    void shouldPutItemReturnSuccess() {
+        given()
+                .pathParam("barcode", "AA21")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(new Item("AA21", "Item A Update", "Item A Description Updated", 6,
+                        new BigDecimal(12800), new BigDecimal(13000), Collections.singleton("Category A")))
+                .log().all()
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .when()
+                .put("/api/inventory/item/{barcode}")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
+                .body("data.barcode", is("AA21"))
+                .body("data.itemName", is("Item A Update"))
+                .body("data.description", is("Item A Description Updated"))
+                .body("data.quantity", is(6))
+                .body("data.buyingPrice", is(12800))
+                .body("data.sellingPrice", is(13000))
+                .body("data.categories.size()", is(1))
+                .body("detailsError", nullValue());
+    }
+
     @BeforeEach
     void setUp() {
         port = webServerApplicationContext.getWebServer().getPort();
