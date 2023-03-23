@@ -12,6 +12,7 @@ import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -57,8 +58,10 @@ public class InventoryService {
                 .build();
     }
 
-    public PaginatedResponse<List<Item>> findPaginatedInventories(int page, int size) {
-        Page<InventoryEntity> inventoryEntities = inventoryRepository.findAll(PageRequest.of(page, size));
+    public PaginatedResponse<List<Item>> findPaginatedInventories(int page, int size, String sortBy, String sortDirection) {
+        Sort.Direction direction = Sort.Direction.fromOptionalString(sortDirection).orElse(Sort.Direction.ASC);
+        Page<InventoryEntity> inventoryEntities = inventoryRepository.findAll(
+                PageRequest.of(page, size, Sort.by(direction, sortBy)));
 
         List<Item> inventories = inventoryEntities.getContent()
                 .stream()

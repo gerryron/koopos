@@ -26,9 +26,12 @@ public class InventoryController {
     @GetMapping
     public ResponseEntity<PaginatedResponse<List<Item>>> getPaginatedInventories(
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(value = "sortDirection", defaultValue = "asc") String sortDirection
     ) {
-        return ResponseEntity.ok(inventoryService.findPaginatedInventories(page - 1, size));
+        return ResponseEntity.ok(inventoryService.findPaginatedInventories(page - 1, size,
+                sortBy, sortDirection));
     }
 
     @GetMapping("/item")

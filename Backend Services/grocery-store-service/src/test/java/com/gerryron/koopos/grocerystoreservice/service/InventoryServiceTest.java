@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -104,9 +105,10 @@ class InventoryServiceTest {
         List<InventoryEntity> expectedResult = List.of(new InventoryEntity(expectedItem1),
                 new InventoryEntity(expectedItem2));
 
-        when(inventoryRepository.findAll(PageRequest.of(0, 10)))
+        when(inventoryRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"))))
                 .thenReturn(new PageImpl<>(expectedResult));
-        PaginatedResponse<List<Item>> actualResult = inventoryService.findPaginatedInventories(0, 10);
+        PaginatedResponse<List<Item>> actualResult = inventoryService.findPaginatedInventories(0, 10,
+                "id", "asc");
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
