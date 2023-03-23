@@ -22,8 +22,8 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(KooposException.class)
     public ResponseEntity<RestResponse<Object>> handleKooposException(HttpServletRequest request, KooposException e) {
-        log.warn("KooposException occurred:: Method= {} URL= {} message= {}-{}", request.getMethod(), request.getRequestURL(),
-                e.getCode(), e.getMessage());
+        log.warn("KooposException occurred:: Method= {} URL= {}  Code= {} Message= {}",
+                request.getMethod(), request.getRequestURL(), e.getCode(), e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(RestResponse.builder()
                         .responseStatus(new ResponseStatus(e.getCode(), e.getMessage()))

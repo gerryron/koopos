@@ -1,0 +1,1 @@
+insert into inventory_categories (inventory_id, category_id) values (1,1);

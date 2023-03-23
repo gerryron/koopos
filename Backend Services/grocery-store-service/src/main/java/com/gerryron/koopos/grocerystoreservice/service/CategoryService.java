@@ -1,8 +1,11 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
+import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.dto.ResponseStatus;
+import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
+import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import lombok.extern.slf4j.Slf4j;
@@ -41,8 +44,20 @@ public class CategoryService {
                 .build();
     }
 
+    public RestResponse<List<Item>> findItemByCategoryName(String categoryName) {
+        CategoryEntity categoryEntity = categoryRepository.findFirstByName(categoryName)
+                .orElseThrow(() -> new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
+
+        return RestResponse.<List<Item>>builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .data(categoryEntity.getInventories()
+                        .stream().map(item -> new Item(item, false))
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
     public CategoryEntity getCategoryEntityIfExists(CategoryEntity categoryEntity) {
-        CategoryEntity existingCategory = categoryRepository.findFirstByName(categoryEntity.getName());
-        return existingCategory != null ? existingCategory : categoryEntity;
+        return categoryRepository.findFirstByName(categoryEntity.getName())
+                .orElse(categoryEntity);
     }
 }

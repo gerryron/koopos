@@ -24,7 +24,7 @@ public class CategoryEntity {
     private String name;
     private LocalDateTime createdDate;
 
-    @ManyToMany(mappedBy = "categories")
+    @ManyToMany(mappedBy = "categories", fetch = FetchType.EAGER)
     private Set<InventoryEntity> inventories;
 
     public CategoryEntity(String categoryName) {
