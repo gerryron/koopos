@@ -8,6 +8,7 @@ import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +25,8 @@ public class CategoryService {
     }
 
     public PaginatedResponse<List<String>> findPaginatedCategories(int page, int size) {
-        Page<CategoryEntity> categoryEntities = categoryRepository.findAll(PageRequest.of(page, size));
+        Page<CategoryEntity> categoryEntities = categoryRepository.findAll(PageRequest.of(page, size,
+                Sort.by(Sort.Direction.ASC, "name")));
 
         return PaginatedResponse.<List<String>>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))

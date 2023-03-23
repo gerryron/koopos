@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class CategoryServiceTest {
         final String expectedCategory2 = "Category B";
         List<CategoryEntity> expectedResult = List.of(new CategoryEntity(expectedCategory1),
                 new CategoryEntity(expectedCategory2));
-        when(categoryRepository.findAll(PageRequest.of(0, 10)))
+        when(categoryRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name"))))
                 .thenReturn(new PageImpl<>(expectedResult));
 
         PaginatedResponse<List<String>> actualResult = categoryService.findPaginatedCategories(0, 10);
