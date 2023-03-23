@@ -51,7 +51,7 @@ public class CategoryService {
         return RestResponse.<List<Item>>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .data(categoryEntity.getInventories()
-                        .stream().map(item -> new Item(item, false))
+                        .stream().map(Item::new)
                         .collect(Collectors.toList()))
                 .build();
     }
