@@ -31,4 +31,20 @@ public class CategoryRepositoryTest {
         assertEquals("Category A", categoryEntities.get(0).getName());
         assertEquals("Category B", categoryEntities.get(1).getName());
     }
+
+    @Test
+    @Sql("classpath:data/db/category.sql")
+    void testFindById() {
+        CategoryEntity categoryEntities = categoryRepository.findById(1).orElseThrow();
+
+        assertEquals("Category A", categoryEntities.getName());
+    }
+
+    @Test
+    @Sql("classpath:data/db/category.sql")
+    void testFindByName() {
+        CategoryEntity categoryEntities = categoryRepository.findFirstByName("Category B").orElseThrow();
+
+        assertEquals("Category B", categoryEntities.getName());
+    }
 }

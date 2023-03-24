@@ -1,11 +1,11 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
+import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,12 +34,11 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.findItemByCategoryName(categoryName));
     }
 
-    @PutMapping(value = "/category/{categoryNameBefore}",
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<RestResponse<String>> updateCategoryName(
-            @PathVariable(value = "categoryNameBefore") String categoryNameBefore,
-            @RequestBody @NotBlank String categoryName
+    @PutMapping(value = "/category/{id}")
+    public ResponseEntity<RestResponse<Category>> updateCategory(
+            @PathVariable(value = "id") Integer id,
+            @RequestBody Category category
     ) {
-        return ResponseEntity.ok(categoryService.updateCategoryName(categoryNameBefore, categoryName));
+        return ResponseEntity.ok(categoryService.updateCategoryName(id, category));
     }
 }

@@ -1,9 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Item;
-import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
-import com.gerryron.koopos.grocerystoreservice.dto.ResponseStatus;
-import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
+import com.gerryron.koopos.grocerystoreservice.dto.*;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
@@ -56,15 +53,15 @@ public class CategoryService {
                 .build();
     }
 
-    public RestResponse<String> updateCategoryName(String categoryNameBefore, String categoryName) {
-        CategoryEntity categoryEntity = categoryRepository.findFirstByName(categoryNameBefore)
+    public RestResponse<Category> updateCategoryName(Integer id, Category category) {
+        CategoryEntity categoryEntity = categoryRepository.findById(id)
                 .orElseThrow(() -> new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
 
-        categoryEntity.setName(categoryName);
+        categoryEntity.setName(category.getCategoryName());
         CategoryEntity updatedCategory = categoryRepository.save(categoryEntity);
-        return RestResponse.<String>builder()
+        return RestResponse.<Category>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(updatedCategory.getName())
+                .data(new Category(updatedCategory))
                 .build();
     }
 

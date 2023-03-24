@@ -1,5 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
+import com.gerryron.koopos.grocerystoreservice.dto.Category;
 import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
@@ -25,8 +26,7 @@ import java.util.Optional;
 import static com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode.CATEGORY_NOT_FOUND;
 import static com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode.SUCCESS;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,6 +86,30 @@ public class CategoryServiceTest {
     void testFindItemByCategoryName_NotFound() {
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> categoryService.findItemByCategoryName(any()));
+        assertEquals(CATEGORY_NOT_FOUND.getCode(), kooposException.getCode());
+        assertEquals(CATEGORY_NOT_FOUND.getMessage(), kooposException.getMessage());
+    }
+
+    @Test
+    @Tag("updateCategory")
+    void testUpdateCategory_Success() {
+        final Category category = new Category(1, "Category A Updated");
+
+        when(categoryRepository.findById(anyInt()))
+                .thenReturn(Optional.of(new CategoryEntity("Category A")));
+        when(categoryRepository.save(any())).thenReturn(new CategoryEntity(category));
+        RestResponse<Category> actualResult = categoryService.updateCategoryName(1, category);
+
+        assertEquals(SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
+        assertEquals(SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
+        assertEquals(category.getCategoryName(), actualResult.getData().getCategoryName());
+    }
+
+    @Test
+    @Tag("updateCategory")
+    void testUpdateCategory_NotFound() {
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> categoryService.updateCategoryName(anyInt(), new Category()));
         assertEquals(CATEGORY_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(CATEGORY_NOT_FOUND.getMessage(), kooposException.getMessage());
     }
