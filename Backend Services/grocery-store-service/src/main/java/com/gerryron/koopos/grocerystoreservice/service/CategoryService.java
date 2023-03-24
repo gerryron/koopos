@@ -56,6 +56,18 @@ public class CategoryService {
                 .build();
     }
 
+    public RestResponse<String> updateCategoryName(String categoryNameBefore, String categoryName) {
+        CategoryEntity categoryEntity = categoryRepository.findFirstByName(categoryNameBefore)
+                .orElseThrow(() -> new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
+
+        categoryEntity.setName(categoryName);
+        CategoryEntity updatedCategory = categoryRepository.save(categoryEntity);
+        return RestResponse.<String>builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .data(updatedCategory.getName())
+                .build();
+    }
+
     public CategoryEntity getCategoryEntityIfExists(CategoryEntity categoryEntity) {
         return categoryRepository.findFirstByName(categoryEntity.getName())
                 .orElse(categoryEntity);
