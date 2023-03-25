@@ -1,7 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
 import com.gerryron.koopos.grocerystoreservice.dto.Category;
-import com.gerryron.koopos.grocerystoreservice.dto.Item;
 import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.service.CategoryService;
@@ -9,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @RestController
@@ -20,18 +18,19 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<PaginatedResponse<List<String>>> getPaginatedCategories(
+    public ResponseEntity<PaginatedResponse<List<Category>>> getPaginatedCategories(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(categoryService.findPaginatedCategories(page - 1, size));
     }
 
-    @GetMapping("/category/{categoryName}")
-    public ResponseEntity<RestResponse<List<Item>>> getItemByCategoryName(
-            @PathVariable(value = "categoryName") String categoryName
+    @GetMapping("/category")
+    public ResponseEntity<RestResponse<Category>> getCategory(
+            @RequestParam(value = "id", defaultValue = "") Integer id,
+            @RequestParam(value = "categoryName", defaultValue = "") String categoryName
     ) {
-        return ResponseEntity.ok(categoryService.findItemByCategoryName(categoryName));
+        return ResponseEntity.ok(categoryService.findCategory(id, categoryName));
     }
 
     @PutMapping(value = "/category/{id}")

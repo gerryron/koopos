@@ -23,8 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode.CATEGORY_NOT_FOUND;
-import static com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode.SUCCESS;
+import static com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -41,30 +40,30 @@ public class CategoryServiceTest {
     @Test
     @Tag("findPaginatedCategories")
     void testFindPaginatedCategories() {
-        final String expectedCategory1 = "Category A";
-        final String expectedCategory2 = "Category B";
+        final Category expectedCategory1 = new Category("Category A");
+        final Category expectedCategory2 = new Category("Category B");
         List<CategoryEntity> expectedResult = List.of(new CategoryEntity(expectedCategory1),
                 new CategoryEntity(expectedCategory2));
 
         when(categoryRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name"))))
                 .thenReturn(new PageImpl<>(expectedResult));
-        PaginatedResponse<List<String>> actualResult = categoryService.findPaginatedCategories(0, 10);
+        PaginatedResponse<List<Category>> actualResult = categoryService.findPaginatedCategories(0, 10);
 
         assertEquals(SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertEquals(2, actualResult.getData().size());
-        assertEquals(expectedCategory1, actualResult.getData().get(0));
-        assertEquals(expectedCategory2, actualResult.getData().get(1));
+        assertEquals(expectedCategory1.getCategoryName(), actualResult.getData().get(0).getCategoryName());
+        assertEquals(expectedCategory2.getCategoryName(), actualResult.getData().get(1).getCategoryName());
         assertEquals(1, actualResult.getDetailPages().getPage());
         assertEquals(10, actualResult.getDetailPages().getRowPerPage());
         assertEquals(2, actualResult.getDetailPages().getTotalData());
     }
 
     @Test
-    @Tag("findItemByCategoryName")
-    void testFindItemByCategoryName_SUCCESS() {
+    @Tag("findCategory")
+    void testFindCategory_SUCCESSFindCategoryName() {
         final String categoryName = "Category A";
-        Item item = new Item("AA21", "Item A", "Item A Description",
+        final Item item = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000),
                 Collections.singleton(categoryName));
         CategoryEntity categoryEntity = new CategoryEntity(categoryName);
@@ -72,20 +71,38 @@ public class CategoryServiceTest {
 
         when(categoryRepository.findFirstByName(anyString()))
                 .thenReturn(Optional.of(categoryEntity));
-        RestResponse<List<Item>> actualResult = categoryService.findItemByCategoryName(categoryName);
+        RestResponse<Category> actualResult = categoryService.findCategory(null, categoryName);
 
         assertEquals(SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
-        assertEquals(1, actualResult.getData().size());
-        assertEquals("AA21", actualResult.getData().get(0).getBarcode());
+        assertEquals(categoryName, actualResult.getData().getCategoryName());
+        assertEquals(1, actualResult.getData().getInventories().size());
         assertNull(actualResult.getErrorDetails());
     }
 
     @Test
-    @Tag("findItemByCategoryName")
-    void testFindItemByCategoryName_NotFound() {
+    @Tag("findCategory")
+    void testFindCategory_InvalidParameter() {
         KooposException kooposException = assertThrows(KooposException.class,
-                () -> categoryService.findItemByCategoryName(any()));
+                () -> categoryService.findCategory(null, ""));
+        assertEquals(INVALID_PARAMETER.getCode(), kooposException.getCode());
+        assertEquals(INVALID_PARAMETER.getMessage(), kooposException.getMessage());
+    }
+
+    @Test
+    @Tag("findCategory")
+    void testFindCategory_CategoryIdNotFound() {
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> categoryService.findCategory(1, ""));
+        assertEquals(CATEGORY_NOT_FOUND.getCode(), kooposException.getCode());
+        assertEquals(CATEGORY_NOT_FOUND.getMessage(), kooposException.getMessage());
+    }
+
+    @Test
+    @Tag("findCategory")
+    void testFindCategory_CategoryNameNotFound() {
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> categoryService.findCategory(null, "AA21"));
         assertEquals(CATEGORY_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(CATEGORY_NOT_FOUND.getMessage(), kooposException.getMessage());
     }
@@ -93,7 +110,7 @@ public class CategoryServiceTest {
     @Test
     @Tag("updateCategory")
     void testUpdateCategory_Success() {
-        final Category category = new Category(1, "Category A Updated");
+        final Category category = new Category("Category A Updated");
 
         when(categoryRepository.findById(anyInt()))
                 .thenReturn(Optional.of(new CategoryEntity("Category A")));

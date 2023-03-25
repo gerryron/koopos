@@ -65,7 +65,7 @@ public class InventoryService {
 
         List<Item> inventories = inventoryEntities.getContent()
                 .stream()
-                .map(Item::new)
+                .map(item -> new Item(item, true))
                 .collect(Collectors.toList());
 
         return PaginatedResponse.<List<Item>>builder()
@@ -86,10 +86,10 @@ public class InventoryService {
             throw new KooposException(ApplicationCode.INVALID_PARAMETER);
         } else if (!barcode.isBlank()) {
             item = new Item(inventoryRepository.findByBarcode(barcode).orElseThrow(() ->
-                    new KooposException(ApplicationCode.BARCODE_NOT_FOUND)));
+                    new KooposException(ApplicationCode.BARCODE_NOT_FOUND)), true);
         } else {
             item = new Item(inventoryRepository.findByItemName(itemName).orElseThrow(() ->
-                    new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND)));
+                    new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND)), true);
         }
 
         return RestResponse.<Item>builder()
@@ -119,7 +119,7 @@ public class InventoryService {
         final InventoryEntity updatedInventory = inventoryRepository.save(existingInventory);
         return RestResponse.<Item>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(new Item(updatedInventory))
+                .data(new Item(updatedInventory, true))
                 .build();
     }
 

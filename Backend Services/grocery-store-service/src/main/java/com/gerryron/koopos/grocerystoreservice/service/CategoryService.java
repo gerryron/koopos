@@ -1,6 +1,9 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.dto.*;
+import com.gerryron.koopos.grocerystoreservice.dto.Category;
+import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
+import com.gerryron.koopos.grocerystoreservice.dto.ResponseStatus;
+import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
@@ -24,14 +27,14 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    public PaginatedResponse<List<String>> findPaginatedCategories(int page, int size) {
+    public PaginatedResponse<List<Category>> findPaginatedCategories(int page, int size) {
         Page<CategoryEntity> categoryEntities = categoryRepository.findAll(PageRequest.of(page, size,
                 Sort.by(Sort.Direction.ASC, "name")));
 
-        return PaginatedResponse.<List<String>>builder()
+        return PaginatedResponse.<List<Category>>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .data(categoryEntities.stream()
-                        .map(CategoryEntity::getName)
+                        .map(Category::new)
                         .collect(Collectors.toList()))
                 .detailPages(PaginatedResponse.PagingMetadata.builder()
                         .page(categoryEntities.getNumber() + 1)
@@ -41,15 +44,21 @@ public class CategoryService {
                 .build();
     }
 
-    public RestResponse<List<Item>> findItemByCategoryName(String categoryName) {
-        CategoryEntity categoryEntity = categoryRepository.findFirstByName(categoryName)
-                .orElseThrow(() -> new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
+    public RestResponse<Category> findCategory(Integer id, String categoryName) {
+        CategoryEntity categoryEntity = new CategoryEntity();
+        if (null == id && categoryName.isBlank()) {
+            throw new KooposException(ApplicationCode.INVALID_PARAMETER);
+        } else if (id != null) {
+            categoryEntity = categoryRepository.findById(id)
+                    .orElseThrow(() -> new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
+        } else if (!categoryName.isBlank()) {
+            categoryEntity = categoryRepository.findFirstByName(categoryName)
+                    .orElseThrow(() -> new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
+        }
 
-        return RestResponse.<List<Item>>builder()
+        return RestResponse.<Category>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(categoryEntity.getInventories()
-                        .stream().map(Item::new)
-                        .collect(Collectors.toList()))
+                .data(new Category(categoryEntity, true))
                 .build();
     }
 
@@ -61,7 +70,7 @@ public class CategoryService {
         CategoryEntity updatedCategory = categoryRepository.save(categoryEntity);
         return RestResponse.<Category>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(new Category(updatedCategory))
+                .data(new Category(updatedCategory, true))
                 .build();
     }
 

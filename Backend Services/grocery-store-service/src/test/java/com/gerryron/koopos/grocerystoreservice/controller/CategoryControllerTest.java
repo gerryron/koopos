@@ -16,8 +16,7 @@ import org.springframework.test.context.jdbc.SqlGroup;
 
 import static com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode.SUCCESS;
 import static io.restassured.RestAssured.*;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -33,7 +32,11 @@ public class CategoryControllerTest {
 
     @Test
     @Tag("getPaginatedCategories")
-    @Sql("classpath:data/db/category.sql")
+    @SqlGroup({
+            @Sql("classpath:data/db/inventory.sql"),
+            @Sql("classpath:data/db/category.sql"),
+            @Sql("classpath:data/db/inventory_categories.sql")
+    })
     void shouldGetPaginatedCategoriesReturnOK() {
         given()
                 .when()
@@ -45,32 +48,59 @@ public class CategoryControllerTest {
                 .body("responseStatus.responseCode", is(SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(SUCCESS.getMessage()))
                 .body("data", hasSize(2))
+                .body("data[0].categoryName", is("Category A"))
+                .body("data[1].categoryName", is("Category B"))
                 .body("detailPages.page", is(1))
                 .body("detailPages.rowPerPage", is(10))
                 .body("detailPages.totalData", is(2));
     }
 
     @Test
-    @Tag("getItemByCategoryName")
+    @Tag("getCategory")
     @SqlGroup({
             @Sql("classpath:data/db/inventory.sql"),
             @Sql("classpath:data/db/category.sql"),
             @Sql("classpath:data/db/inventory_categories.sql")
     })
-    void shouldGetItemByCategoryNameReturnOK() {
+    void shouldGetCategoryByIdReturnOK() {
         given()
-                .pathParam("categoryName", "Category A")
+                .queryParam("id", "1")
                 .when()
-                .get("/api/categories/category/{categoryName}")
+                .get("/api/categories/category")
                 .then()
                 .log().all()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .body("responseStatus.responseCode", is(SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(SUCCESS.getMessage()))
-                .body("data", hasSize(1))
-                .body("data[0].barcode", is("AA21"))
-                .body("data[0].itemName", is("Item A"));
+                .body("data.id", is(1))
+                .body("data.categoryName", is("Category A"))
+                .body("data.inventories", hasSize(1))
+                .body("data.errorDetails", nullValue());
+    }
+
+    @Test
+    @Tag("getCategory")
+    @SqlGroup({
+            @Sql("classpath:data/db/inventory.sql"),
+            @Sql("classpath:data/db/category.sql"),
+            @Sql("classpath:data/db/inventory_categories.sql")
+    })
+    void shouldGetCategoryByCategoryNameReturnOK() {
+        given()
+                .queryParam("categoryName", "Category A")
+                .when()
+                .get("/api/categories/category")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("responseStatus.responseCode", is(SUCCESS.getCode()))
+                .body("responseStatus.responseMessage", is(SUCCESS.getMessage()))
+                .body("data.id", is(1))
+                .body("data.categoryName", is("Category A"))
+                .body("data.inventories", hasSize(1))
+                .body("data.errorDetails", nullValue());
     }
 
     @Test
@@ -80,7 +110,7 @@ public class CategoryControllerTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .pathParam("id", "1")
-                .body(new Category(1, "Category A Updated"))
+                .body(new Category("Category A Updated"))
                 .when()
                 .put("/api/categories/category/{id}")
                 .then()

@@ -1,10 +1,12 @@
 package com.gerryron.koopos.grocerystoreservice.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
@@ -14,7 +16,8 @@ import java.math.BigDecimal;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Item {
@@ -31,6 +34,7 @@ public class Item {
     @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal sellingPrice;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Set<String> categories;
 
     public Item(InventoryEntity inventoryEntity) {
@@ -40,7 +44,11 @@ public class Item {
         this.quantity = inventoryEntity.getQuantity();
         this.buyingPrice = inventoryEntity.getBuyingPrice();
         this.sellingPrice = inventoryEntity.getSellingPrice();
-        if (null != inventoryEntity.getCategories()) {
+    }
+
+    public Item(InventoryEntity inventoryEntity, boolean withCategories) {
+        this(inventoryEntity);
+        if (withCategories && null != inventoryEntity.getCategories()) {
             this.categories = inventoryEntity.getCategories().stream()
                     .map(CategoryEntity::getName)
                     .collect(Collectors.toSet());

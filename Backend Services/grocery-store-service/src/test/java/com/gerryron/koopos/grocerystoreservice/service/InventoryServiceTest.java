@@ -113,8 +113,8 @@ class InventoryServiceTest {
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertEquals(2, actualResult.getData().size());
-        assertEquals(expectedItem1, actualResult.getData().get(0));
-        assertEquals(expectedItem2, actualResult.getData().get(1));
+        assertEquals(expectedItem1.getBarcode(), actualResult.getData().get(0).getBarcode());
+        assertEquals(expectedItem2.getBarcode(), actualResult.getData().get(1).getBarcode());
         assertEquals(1, actualResult.getDetailPages().getPage());
         assertEquals(10, actualResult.getDetailPages().getRowPerPage());
         assertEquals(2, actualResult.getDetailPages().getTotalData());
