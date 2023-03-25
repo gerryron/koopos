@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,14 +48,17 @@ class InventoryServiceTest {
     @Test
     @Tag("createItem")
     void testCreateItem_SuccessWithoutCategories() {
-        final Item expectedItem = new Item("AA21", "Item A", "Item A Description",
+        Item expectedItem = new Item("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
+        expectedItem.setUpdatedDate(LocalDateTime.MIN);
 
         RestResponse<Item> actualResult = inventoryService.createItem(expectedItem);
 
         verify(inventoryRepository).save(inventoryEntityArgumentCaptor.capture());
         InventoryEntity valueCaptor = inventoryEntityArgumentCaptor.getValue();
         assertEquals(expectedItem.getItemName(), valueCaptor.getItemName());
+        assertNotNull(valueCaptor.getUpdatedDate());
+        assertNotEquals(expectedItem.getUpdatedDate(), valueCaptor.getUpdatedDate());
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertEquals(expectedItem, actualResult.getData());
@@ -219,7 +223,7 @@ class InventoryServiceTest {
 
     @Test
     @Tag("deleteItem")
-    void testDeleteItem_SUCCESS() {
+    void testDeleteItem_Success() {
         final String barcode = "AA21";
         final Item item = new Item(barcode, "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), Collections.singleton("Category A"));
@@ -236,9 +240,9 @@ class InventoryServiceTest {
 
     @Test
     @Tag("deleteItem")
-    void testDeleteItem_BARCODE_NOT_FOUND() {
+    void testDeleteItem_BarcodeNotFound() {
         KooposException kooposException = assertThrows(KooposException.class,
-                () -> inventoryService.updateItem("ASAL", new Item()));
+                () -> inventoryService.deleteItem("ASAL"));
         assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
         assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
     }

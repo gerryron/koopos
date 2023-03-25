@@ -7,7 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 class GroceryStoreServiceApplicationTests {
 
 	@Test
-	void contextLoads() {
+	public void main() {
+		GroceryStoreServiceApplication.main(new String[] {});
 	}
 
 }

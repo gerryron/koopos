@@ -123,6 +123,24 @@ public class CategoryControllerTest {
                 .body("data.categoryName", is("Category A Updated"));
     }
 
+    @Test
+    @Tag("deleteCategory")
+    @Sql("classpath:data/db/category.sql")
+    void shouldDeleteCategoryReturnOK() {
+        given()
+                .pathParam("id", "1")
+                .when()
+                .delete("/api/categories/category/{id}")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("responseStatus.responseCode", is(SUCCESS.getCode()))
+                .body("responseStatus.responseMessage", is(SUCCESS.getMessage()))
+                .body("data", nullValue())
+                .body("detailsError", nullValue());
+    }
+
     @AfterEach
     void tearDown() {
         reset();

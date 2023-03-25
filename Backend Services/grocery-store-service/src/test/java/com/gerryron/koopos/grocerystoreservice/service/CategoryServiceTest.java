@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -131,6 +132,47 @@ public class CategoryServiceTest {
                 () -> categoryService.updateCategoryName(anyInt(), new Category()));
         assertEquals(CATEGORY_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(CATEGORY_NOT_FOUND.getMessage(), kooposException.getMessage());
+    }
+
+    @Test
+    @Tag("deleteCategory")
+    void testDeleteCategory_Success() {
+        final Category category = new Category("Category A");
+        final CategoryEntity categoryEntity = new CategoryEntity(category);
+        categoryEntity.setInventories(new HashSet<>());
+
+        when(categoryRepository.findById(anyInt())).thenReturn(Optional.of(categoryEntity));
+        RestResponse<Object> actualResult = categoryService.deleteCategory(anyInt());
+
+        assertEquals(actualResult.getResponseStatus().getResponseCode(), SUCCESS.getCode());
+        assertEquals(actualResult.getResponseStatus().getResponseMessage(), SUCCESS.getMessage());
+    }
+
+    @Test
+    @Tag("deleteCategory")
+    void testDeleteCategory_CannotDeleteCategory() {
+        final Category category = new Category("Category A");
+        final CategoryEntity categoryEntity = new CategoryEntity(category);
+        final Item item = new Item("AA21", "Item A", "Item A Description",
+                20, new BigDecimal(2000), new BigDecimal(3000), Collections.singleton("Category A"));
+        categoryEntity.setInventories(Collections.singleton(new InventoryEntity(item)));
+
+        when(categoryRepository.findById(anyInt())).thenReturn(Optional.of(categoryEntity));
+
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> categoryService.deleteCategory(anyInt()));
+        assertEquals(kooposException.getCode(), CANNOT_DELETE_CATEGORY.getCode());
+        assertEquals(kooposException.getMessage(), CANNOT_DELETE_CATEGORY.getMessage()
+                + ": " + "because there are " + categoryEntity.getInventories().size() + " items in this category");
+    }
+
+    @Test
+    @Tag("deleteCategory")
+    void testDeleteCategory_CategoryIdNotFound() {
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> categoryService.deleteCategory(99));
+        assertEquals(kooposException.getCode(), CATEGORY_NOT_FOUND.getCode());
+        assertEquals(kooposException.getMessage(), CATEGORY_NOT_FOUND.getMessage());
     }
 }
 

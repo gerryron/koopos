@@ -73,4 +73,22 @@ public class CategoryService {
                 .data(new Category(updatedCategory, true))
                 .build();
     }
+
+    public RestResponse<Object> deleteCategory(Integer id) {
+        CategoryEntity existingCategory = categoryRepository.findById(id).orElseThrow(() ->
+                new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
+
+        int itemTotal = existingCategory.getInventories().size();
+        if (itemTotal != 0) {
+            throw new KooposException(ApplicationCode.CANNOT_DELETE_CATEGORY.getCode(),
+                    ApplicationCode.CANNOT_DELETE_CATEGORY.getMessage() + ": " +
+                            "because there are " + itemTotal + " items in this category");
+        }
+
+        categoryRepository.delete(existingCategory);
+        return RestResponse.builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .build();
+    }
+
 }

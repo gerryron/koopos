@@ -12,7 +12,8 @@ public enum ApplicationCode {
     INVALID_PARAMETER("03", "Invalid parameter"),
     BARCODE_NOT_FOUND("04", "Barcode is not found"),
     ITEM_NAME_NOT_FOUND("05", "Item name is not found"),
-    CATEGORY_NOT_FOUND("06", "Category is not found");
+    CATEGORY_NOT_FOUND("06", "Category is not found"),
+    CANNOT_DELETE_CATEGORY("07", "Cannot delete category");
 
     private final String code;
     private final String message;

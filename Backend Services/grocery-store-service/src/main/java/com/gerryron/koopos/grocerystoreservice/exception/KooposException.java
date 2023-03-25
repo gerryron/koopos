@@ -1,12 +1,14 @@
 package com.gerryron.koopos.grocerystoreservice.exception;
 
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@Value
+@Getter
+@AllArgsConstructor
 public class KooposException extends RuntimeException {
-    String code;
-    String message;
+    private String code;
+    private String message;
 
     public KooposException(final ApplicationCode applicationCode) {
         code = applicationCode.getCode();
