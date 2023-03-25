@@ -60,6 +60,7 @@ public class Item {
         this.buyingPrice = inventoryEntity.getBuyingPrice();
         this.sellingPrice = inventoryEntity.getSellingPrice();
         this.createdDate = inventoryEntity.getCreatedDate();
+        this.updatedDate = inventoryEntity.getUpdatedDate();
     }
 
     public Item(InventoryEntity inventoryEntity, boolean withCategories) {

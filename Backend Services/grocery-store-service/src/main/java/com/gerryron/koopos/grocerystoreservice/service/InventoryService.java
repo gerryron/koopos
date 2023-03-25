@@ -52,11 +52,11 @@ public class InventoryService {
             inventoryEntity.setCategories(categoryEntities);
         }
 
-        inventoryRepository.save(inventoryEntity);
+        InventoryEntity createdInventory = inventoryRepository.save(inventoryEntity);
         log.info("Success create: {}", item);
         return RestResponse.<Item>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(item)
+                .data(new Item(createdInventory, true))
                 .build();
     }
 
