@@ -6,6 +6,7 @@ import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
+import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
 import com.gerryron.koopos.grocerystoreservice.repository.InventoryRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import org.junit.jupiter.api.Tag;
@@ -33,9 +34,9 @@ import static org.mockito.Mockito.when;
 class InventoryServiceTest {
 
     @Mock
-    private InventoryRepository inventoryRepository;
+    private CategoryRepository categoryRepository;
     @Mock
-    private CategoryService categoryService;
+    private InventoryRepository inventoryRepository;
 
     @InjectMocks
     private InventoryService inventoryService;
@@ -67,7 +68,8 @@ class InventoryServiceTest {
                 20, new BigDecimal(2000), new BigDecimal(3000),
                 Collections.singleton(expectedCategory));
 
-        when(categoryService.getCategoryEntityIfExists(any())).thenReturn(new CategoryEntity(expectedCategory));
+        when(categoryRepository.findFirstByName(anyString()))
+                .thenReturn(Optional.of(new CategoryEntity(expectedCategory)));
         RestResponse<Item> actualResult = inventoryService.createItem(expectedItem);
 
         verify(inventoryRepository).save(inventoryEntityArgumentCaptor.capture());
@@ -87,7 +89,8 @@ class InventoryServiceTest {
         final Item existingItem = new Item(barcode, "Item Z", "Item Z Description",
                 5, new BigDecimal(80000), new BigDecimal(85000), null);
 
-        when(inventoryRepository.findByBarcode(barcode)).thenReturn(Optional.of(new InventoryEntity(existingItem)));
+        when(inventoryRepository.findByBarcode(barcode))
+                .thenReturn(Optional.of(new InventoryEntity(existingItem)));
 
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> inventoryService.createItem(expectedItem));
@@ -238,5 +241,17 @@ class InventoryServiceTest {
                 () -> inventoryService.updateItem("ASAL", new Item()));
         assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
         assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @Tag("getCategoryEntityIfExists")
+    void testGetCategoryEntityIfExists_ReturnExpected() {
+        final String expectedCategoryName = "Category A";
+        final CategoryEntity expectedCategoryEntity = new CategoryEntity(expectedCategoryName);
+
+        when(categoryRepository.findFirstByName(expectedCategoryName)).thenReturn(Optional.of(expectedCategoryEntity));
+        CategoryEntity existingCategory = inventoryService.getCategoryEntityIfExists(expectedCategoryEntity);
+
+        assertEquals(expectedCategoryEntity, existingCategory);
     }
 }

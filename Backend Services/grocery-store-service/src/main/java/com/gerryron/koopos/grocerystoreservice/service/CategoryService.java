@@ -73,9 +73,4 @@ public class CategoryService {
                 .data(new Category(updatedCategory, true))
                 .build();
     }
-
-    public CategoryEntity getCategoryEntityIfExists(CategoryEntity categoryEntity) {
-        return categoryRepository.findFirstByName(categoryEntity.getName())
-                .orElse(categoryEntity);
-    }
 }

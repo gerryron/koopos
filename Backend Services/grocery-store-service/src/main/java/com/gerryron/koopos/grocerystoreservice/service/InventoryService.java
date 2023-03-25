@@ -7,6 +7,7 @@ import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
 import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
+import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
 import com.gerryron.koopos.grocerystoreservice.repository.InventoryRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,11 +28,11 @@ import java.util.stream.Collectors;
 @Service
 public class InventoryService {
 
-    private final CategoryService categoryService;
+    private final CategoryRepository categoryRepository;
     private final InventoryRepository inventoryRepository;
 
-    public InventoryService(CategoryService categoryService, InventoryRepository inventoryRepository) {
-        this.categoryService = categoryService;
+    public InventoryService(CategoryRepository categoryRepository, InventoryRepository inventoryRepository) {
+        this.categoryRepository = categoryRepository;
         this.inventoryRepository = inventoryRepository;
     }
 
@@ -45,7 +47,7 @@ public class InventoryService {
             Set<CategoryEntity> categoryEntities = new HashSet<>();
             for (String category : item.getCategories()) {
                 CategoryEntity categoryEntity = new CategoryEntity(category);
-                categoryEntities.add(categoryService.getCategoryEntityIfExists(categoryEntity));
+                categoryEntities.add(getCategoryEntityIfExists(categoryEntity));
             }
             inventoryEntity.setCategories(categoryEntities);
         }
@@ -106,12 +108,13 @@ public class InventoryService {
         existingInventory.setQuantity(item.getQuantity());
         existingInventory.setBuyingPrice(item.getBuyingPrice());
         existingInventory.setSellingPrice(item.getSellingPrice());
+        existingInventory.setUpdatedDate(LocalDateTime.now());
         existingInventory.getCategories().clear();
         if (null != item.getCategories()) {
             Set<CategoryEntity> categoryEntities = new HashSet<>();
             for (String category : item.getCategories()) {
                 CategoryEntity categoryEntity = new CategoryEntity(category);
-                categoryEntities.add(categoryService.getCategoryEntityIfExists(categoryEntity));
+                categoryEntities.add(getCategoryEntityIfExists(categoryEntity));
             }
             existingInventory.setCategories(categoryEntities);
         }
@@ -132,5 +135,10 @@ public class InventoryService {
         return RestResponse.builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .build();
+    }
+
+    public CategoryEntity getCategoryEntityIfExists(CategoryEntity categoryEntity) {
+        return categoryRepository.findFirstByName(categoryEntity.getName())
+                .orElse(categoryEntity);
     }
 }

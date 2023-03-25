@@ -23,6 +23,8 @@ public class Category {
     private LocalDateTime createdDate;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer itemTotal;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Set<Item> inventories;
 
     public Category(String categoryName) {
@@ -33,6 +35,11 @@ public class Category {
         this.id = categoryEntity.getId();
         this.categoryName = categoryEntity.getName();
         this.createdDate = categoryEntity.getCreatedDate();
+        if (null != categoryEntity.getInventories()) {
+            this.itemTotal = categoryEntity.getInventories().size();
+        } else {
+            this.itemTotal = 0;
+        }
     }
 
     public Category(CategoryEntity categoryEntity, boolean withInventories) {

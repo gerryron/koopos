@@ -53,7 +53,9 @@ public class CategoryServiceTest {
         assertEquals(SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertEquals(2, actualResult.getData().size());
         assertEquals(expectedCategory1.getCategoryName(), actualResult.getData().get(0).getCategoryName());
+        assertEquals(0, actualResult.getData().get(0).getItemTotal());
         assertEquals(expectedCategory2.getCategoryName(), actualResult.getData().get(1).getCategoryName());
+        assertEquals(0, actualResult.getData().get(1).getItemTotal());
         assertEquals(1, actualResult.getDetailPages().getPage());
         assertEquals(10, actualResult.getDetailPages().getRowPerPage());
         assertEquals(2, actualResult.getDetailPages().getTotalData());
@@ -129,18 +131,6 @@ public class CategoryServiceTest {
                 () -> categoryService.updateCategoryName(anyInt(), new Category()));
         assertEquals(CATEGORY_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(CATEGORY_NOT_FOUND.getMessage(), kooposException.getMessage());
-    }
-
-    @Test
-    @Tag("getCategoryEntityIfExists")
-    void testGetCategoryEntityIfExists_ReturnExpected() {
-        final String expectedCategoryName = "Category A";
-        final CategoryEntity expectedCategoryEntity = new CategoryEntity(expectedCategoryName);
-
-        when(categoryRepository.findFirstByName(expectedCategoryName)).thenReturn(Optional.of(expectedCategoryEntity));
-        CategoryEntity existingCategory = categoryService.getCategoryEntityIfExists(expectedCategoryEntity);
-
-        assertEquals(expectedCategoryEntity, existingCategory);
     }
 }
 

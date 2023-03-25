@@ -44,6 +44,7 @@ public class InventoryEntity {
         this.quantity = item.getQuantity();
         this.buyingPrice = item.getBuyingPrice();
         this.sellingPrice = item.getSellingPrice();
+        this.updatedDate = LocalDateTime.now();
         if (null != item.getCategories()) {
             this.categories = item.getCategories().stream()
                     .map(CategoryEntity::new)
@@ -54,6 +55,5 @@ public class InventoryEntity {
     @PrePersist
     void preInsert() {
         this.createdDate = LocalDateTime.now();
-        this.updatedDate = LocalDateTime.now();
     }
 }
