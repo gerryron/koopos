@@ -11,7 +11,7 @@ public enum ApplicationCode {
     ITEM_ALREADY_EXISTS("02", "Item already exists"),
     INVALID_PARAMETER("03", "Invalid parameter"),
     BARCODE_NOT_FOUND("04", "Barcode is not found"),
-    ITEM_NAME_NOT_FOUND("05", "Item name is not found"),
+    ITEM_NAME_NOT_FOUND("05", "Item is not found"),
     CATEGORY_NOT_FOUND("06", "Category is not found"),
     CANNOT_DELETE_CATEGORY("07", "Cannot delete category");
 
