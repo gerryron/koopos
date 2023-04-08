@@ -45,7 +45,7 @@ public class TransactionService {
         List<TransactionDetailsEntity> transactionDetailsEntities = new ArrayList<>();
         for (TransactionRequest.ProductPurchased productPurchased : transactionRequest.getProductsPurchased()) {
             ProductEntity product = productRepository.findById(productPurchased.getProductId()).orElseThrow(() ->
-                    new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND));
+                    new KooposException(ApplicationCode.PRODUCT_NOT_FOUND));
 
             totalPrice = totalPrice.add(product.getSellingPrice()
                     .multiply(new BigDecimal(productPurchased.getAmount())));

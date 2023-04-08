@@ -7,8 +7,8 @@ import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
 import com.gerryron.koopos.grocerystoreservice.repository.ProductRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import com.gerryron.koopos.grocerystoreservice.shared.dto.Product;
-import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.shared.dto.ResponseStatus;
+import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,7 +39,7 @@ public class ProductService {
     @Transactional
     public RestResponse<Product> createProduct(Product product) {
         productRepository.findByBarcode(product.getBarcode()).ifPresent(s -> {
-            throw new KooposException(ApplicationCode.ITEM_ALREADY_EXISTS);
+            throw new KooposException(ApplicationCode.PRODUCT_ALREADY_EXISTS);
         });
 
         ProductEntity productEntity = new ProductEntity(product);
@@ -88,10 +88,10 @@ public class ProductService {
             throw new KooposException(ApplicationCode.INVALID_PARAMETER);
         } else if (!barcode.isBlank()) {
             product = new Product(productRepository.findByBarcode(barcode).orElseThrow(() ->
-                    new KooposException(ApplicationCode.BARCODE_NOT_FOUND)), true);
+                    new KooposException(ApplicationCode.PRODUCT_NOT_FOUND)), true);
         } else {
             product = new Product(productRepository.findByProductName(productName).orElseThrow(() ->
-                    new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND)), true);
+                    new KooposException(ApplicationCode.PRODUCT_NOT_FOUND)), true);
         }
 
         return RestResponse.<Product>builder()
@@ -102,7 +102,7 @@ public class ProductService {
 
     public RestResponse<Product> updateProduct(String barcode, Product product) {
         ProductEntity existingInventory = productRepository.findByBarcode(barcode).orElseThrow(() ->
-                new KooposException(ApplicationCode.BARCODE_NOT_FOUND));
+                new KooposException(ApplicationCode.PRODUCT_NOT_FOUND));
         existingInventory.setProductName(product.getProductName());
         existingInventory.setDescription(product.getDescription());
         existingInventory.setQuantity(product.getQuantity());
@@ -128,7 +128,7 @@ public class ProductService {
 
     public RestResponse<Object> deleteProduct(String barcode) {
         ProductEntity existingInventory = productRepository.findByBarcode(barcode).orElseThrow(() ->
-                new KooposException(ApplicationCode.BARCODE_NOT_FOUND));
+                new KooposException(ApplicationCode.PRODUCT_NOT_FOUND));
         existingInventory.getCategories().clear();
 
         productRepository.delete(existingInventory);

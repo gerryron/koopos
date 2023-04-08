@@ -90,8 +90,8 @@ class ProductControllerTest {
                 .log().all()
                 .assertThat()
                 .statusCode(HttpStatus.BAD_REQUEST.value())
-                .body("responseStatus.responseCode", is(ApplicationCode.ITEM_ALREADY_EXISTS.getCode()))
-                .body("responseStatus.responseMessage", is(ApplicationCode.ITEM_ALREADY_EXISTS.getMessage()))
+                .body("responseStatus.responseCode", is(ApplicationCode.PRODUCT_ALREADY_EXISTS.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.PRODUCT_ALREADY_EXISTS.getMessage()))
                 .body("data", nullValue())
                 .body("detailsError", nullValue());
     }

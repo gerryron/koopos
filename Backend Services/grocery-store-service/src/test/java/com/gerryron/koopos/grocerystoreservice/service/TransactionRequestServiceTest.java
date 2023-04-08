@@ -104,7 +104,7 @@ class TransactionRequestServiceTest {
 
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> transactionService.createTransaction(transactionRequest));
-        assertEquals(ApplicationCode.ITEM_NAME_NOT_FOUND.getCode(), kooposException.getCode());
-        assertEquals(ApplicationCode.ITEM_NAME_NOT_FOUND.getMessage(), kooposException.getMessage());
+        assertEquals(ApplicationCode.PRODUCT_NOT_FOUND.getCode(), kooposException.getCode());
+        assertEquals(ApplicationCode.PRODUCT_NOT_FOUND.getMessage(), kooposException.getMessage());
     }
 }

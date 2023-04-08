@@ -8,12 +8,11 @@ import lombok.Getter;
 public enum ApplicationCode {
     SUCCESS("00", "SUCCESS"),
     VALIDATION_ERROR("01", "Validation error"),
-    ITEM_ALREADY_EXISTS("02", "Item already exists"),
-    INVALID_PARAMETER("03", "Invalid parameter"),
-    BARCODE_NOT_FOUND("04", "Barcode is not found"),
-    ITEM_NAME_NOT_FOUND("05", "Item is not found"),
-    CATEGORY_NOT_FOUND("06", "Category is not found"),
-    CANNOT_DELETE_CATEGORY("07", "Cannot delete category");
+    INVALID_PARAMETER("02", "Invalid parameter"),
+    PRODUCT_ALREADY_EXISTS("03", "Product already exists"),
+    PRODUCT_NOT_FOUND("04", "Product is not found"),
+    CATEGORY_NOT_FOUND("05", "Category is not found"),
+    CANNOT_DELETE_CATEGORY("06", "Cannot delete category");
 
     private final String code;
     private final String message;

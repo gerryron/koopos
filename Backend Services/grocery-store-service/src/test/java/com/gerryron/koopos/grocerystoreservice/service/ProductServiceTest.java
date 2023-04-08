@@ -94,8 +94,8 @@ class ProductServiceTest {
 
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> productService.createProduct(expectedProduct));
-        assertEquals(kooposException.getCode(), ApplicationCode.ITEM_ALREADY_EXISTS.getCode());
-        assertEquals(kooposException.getMessage(), ApplicationCode.ITEM_ALREADY_EXISTS.getMessage());
+        assertEquals(kooposException.getCode(), ApplicationCode.PRODUCT_ALREADY_EXISTS.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.PRODUCT_ALREADY_EXISTS.getMessage());
     }
 
     @Test
@@ -171,8 +171,8 @@ class ProductServiceTest {
     void testFindProductByBarcode_BarcodeNotFound() {
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> productService.findProduct("ASAL", ""));
-        assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
-        assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
+        assertEquals(kooposException.getCode(), ApplicationCode.PRODUCT_NOT_FOUND.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.PRODUCT_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -180,13 +180,13 @@ class ProductServiceTest {
     void testFindProductByBarcode_ProductNameNotFound() {
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> productService.findProduct("", "ASAL"));
-        assertEquals(kooposException.getCode(), ApplicationCode.ITEM_NAME_NOT_FOUND.getCode());
-        assertEquals(kooposException.getMessage(), ApplicationCode.ITEM_NAME_NOT_FOUND.getMessage());
+        assertEquals(kooposException.getCode(), ApplicationCode.PRODUCT_NOT_FOUND.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.PRODUCT_NOT_FOUND.getMessage());
     }
 
     @Test
     @Tag("updateProduct")
-    void testUpdateProduct_SUCCESS() {
+    void testUpdateProduct_Success() {
         String barcode = "AA21";
         Set<String> categories = new HashSet<>();
         categories.add("Category A");
@@ -210,11 +210,11 @@ class ProductServiceTest {
 
     @Test
     @Tag("updateProduct")
-    void testUpdateProduct_BARCODE_NOT_FOUND() {
+    void testUpdateProduct_BarcodeNotFound() {
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> productService.updateProduct("ASAL", new Product()));
-        assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
-        assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
+        assertEquals(kooposException.getCode(), ApplicationCode.PRODUCT_NOT_FOUND.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.PRODUCT_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -239,8 +239,8 @@ class ProductServiceTest {
     void testDeleteProduct_BarcodeNotFound() {
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> productService.deleteProduct("ASAL"));
-        assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
-        assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
+        assertEquals(kooposException.getCode(), ApplicationCode.PRODUCT_NOT_FOUND.getCode());
+        assertEquals(kooposException.getMessage(), ApplicationCode.PRODUCT_NOT_FOUND.getMessage());
     }
 
     @Test
