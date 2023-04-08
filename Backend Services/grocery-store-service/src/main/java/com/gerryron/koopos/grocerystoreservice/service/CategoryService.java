@@ -1,9 +1,9 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
-import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
-import com.gerryron.koopos.grocerystoreservice.dto.ResponseStatus;
-import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
+import com.gerryron.koopos.grocerystoreservice.shared.request.CategoryDto;
+import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
+import com.gerryron.koopos.grocerystoreservice.shared.response.ResponseStatus;
+import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
 import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
@@ -27,14 +27,14 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    public PaginatedResponse<List<Category>> findPaginatedCategories(int page, int size) {
+    public PaginatedResponse<List<CategoryDto>> findPaginatedCategories(int page, int size) {
         Page<CategoryEntity> categoryEntities = categoryRepository.findAll(PageRequest.of(page, size,
                 Sort.by(Sort.Direction.ASC, "name")));
 
-        return PaginatedResponse.<List<Category>>builder()
+        return PaginatedResponse.<List<CategoryDto>>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .data(categoryEntities.stream()
-                        .map(Category::new)
+                        .map(CategoryDto::new)
                         .collect(Collectors.toList()))
                 .detailPages(PaginatedResponse.PagingMetadata.builder()
                         .page(categoryEntities.getNumber() + 1)
@@ -44,7 +44,7 @@ public class CategoryService {
                 .build();
     }
 
-    public RestResponse<Category> findCategory(Integer id, String categoryName) {
+    public RestResponse<CategoryDto> findCategory(Integer id, String categoryName) {
         CategoryEntity categoryEntity = new CategoryEntity();
         if (null == id && categoryName.isBlank()) {
             throw new KooposException(ApplicationCode.INVALID_PARAMETER);
@@ -56,21 +56,21 @@ public class CategoryService {
                     .orElseThrow(() -> new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
         }
 
-        return RestResponse.<Category>builder()
+        return RestResponse.<CategoryDto>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(new Category(categoryEntity, true))
+                .data(new CategoryDto(categoryEntity, true))
                 .build();
     }
 
-    public RestResponse<Category> updateCategoryName(Integer id, Category category) {
+    public RestResponse<CategoryDto> updateCategoryName(Integer id, CategoryDto categoryDto) {
         CategoryEntity categoryEntity = categoryRepository.findById(id)
                 .orElseThrow(() -> new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
 
-        categoryEntity.setName(category.getCategoryName());
+        categoryEntity.setName(categoryDto.getCategoryName());
         CategoryEntity updatedCategory = categoryRepository.save(categoryEntity);
-        return RestResponse.<Category>builder()
+        return RestResponse.<CategoryDto>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(new Category(updatedCategory, true))
+                .data(new CategoryDto(updatedCategory, true))
                 .build();
     }
 
@@ -78,7 +78,7 @@ public class CategoryService {
         CategoryEntity existingCategory = categoryRepository.findById(id).orElseThrow(() ->
                 new KooposException(ApplicationCode.CATEGORY_NOT_FOUND));
 
-        int itemTotal = existingCategory.getInventories().size();
+        int itemTotal = existingCategory.getProductEntities().size();
         if (itemTotal != 0) {
             throw new KooposException(ApplicationCode.CANNOT_DELETE_CATEGORY.getCode(),
                     ApplicationCode.CANNOT_DELETE_CATEGORY.getMessage() + ": " +

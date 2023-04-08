@@ -1,13 +1,13 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
-import com.gerryron.koopos.grocerystoreservice.dto.Item;
-import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
-import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
-import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
+import com.gerryron.koopos.grocerystoreservice.entity.ProductEntity;
 import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
+import com.gerryron.koopos.grocerystoreservice.shared.request.CategoryDto;
+import com.gerryron.koopos.grocerystoreservice.shared.request.ProductDto;
+import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
+import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +30,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CategoryServiceTest {
+public class CategoryDtoServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
@@ -41,21 +41,21 @@ public class CategoryServiceTest {
     @Test
     @Tag("findPaginatedCategories")
     void testFindPaginatedCategories() {
-        final Category expectedCategory1 = new Category("Category A");
-        final Category expectedCategory2 = new Category("Category B");
-        List<CategoryEntity> expectedResult = List.of(new CategoryEntity(expectedCategory1),
-                new CategoryEntity(expectedCategory2));
+        final CategoryDto expectedCategory1Dto = new CategoryDto("Category A");
+        final CategoryDto expectedCategory2Dto = new CategoryDto("Category B");
+        List<CategoryEntity> expectedResult = List.of(new CategoryEntity(expectedCategory1Dto),
+                new CategoryEntity(expectedCategory2Dto));
 
         when(categoryRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "name"))))
                 .thenReturn(new PageImpl<>(expectedResult));
-        PaginatedResponse<List<Category>> actualResult = categoryService.findPaginatedCategories(0, 10);
+        PaginatedResponse<List<CategoryDto>> actualResult = categoryService.findPaginatedCategories(0, 10);
 
         assertEquals(SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertEquals(2, actualResult.getData().size());
-        assertEquals(expectedCategory1.getCategoryName(), actualResult.getData().get(0).getCategoryName());
+        assertEquals(expectedCategory1Dto.getCategoryName(), actualResult.getData().get(0).getCategoryName());
         assertEquals(0, actualResult.getData().get(0).getItemTotal());
-        assertEquals(expectedCategory2.getCategoryName(), actualResult.getData().get(1).getCategoryName());
+        assertEquals(expectedCategory2Dto.getCategoryName(), actualResult.getData().get(1).getCategoryName());
         assertEquals(0, actualResult.getData().get(1).getItemTotal());
         assertEquals(1, actualResult.getDetailPages().getPage());
         assertEquals(10, actualResult.getDetailPages().getRowPerPage());
@@ -66,20 +66,20 @@ public class CategoryServiceTest {
     @Tag("findCategory")
     void testFindCategory_SUCCESSFindCategoryName() {
         final String categoryName = "Category A";
-        final Item item = new Item("AA21", "Item A", "Item A Description",
+        final ProductDto productDto = new ProductDto("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000),
                 Collections.singleton(categoryName));
         CategoryEntity categoryEntity = new CategoryEntity(categoryName);
-        categoryEntity.setInventories(Collections.singleton(new InventoryEntity(item)));
+        categoryEntity.setProductEntities(Collections.singleton(new ProductEntity(productDto)));
 
         when(categoryRepository.findFirstByName(anyString()))
                 .thenReturn(Optional.of(categoryEntity));
-        RestResponse<Category> actualResult = categoryService.findCategory(null, categoryName);
+        RestResponse<CategoryDto> actualResult = categoryService.findCategory(null, categoryName);
 
         assertEquals(SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertEquals(categoryName, actualResult.getData().getCategoryName());
-        assertEquals(1, actualResult.getData().getInventories().size());
+        assertEquals(1, actualResult.getData().getProducts().size());
         assertNull(actualResult.getErrorDetails());
     }
 
@@ -113,23 +113,23 @@ public class CategoryServiceTest {
     @Test
     @Tag("updateCategory")
     void testUpdateCategory_Success() {
-        final Category category = new Category("Category A Updated");
+        final CategoryDto categoryDto = new CategoryDto("Category A Updated");
 
         when(categoryRepository.findById(anyInt()))
                 .thenReturn(Optional.of(new CategoryEntity("Category A")));
-        when(categoryRepository.save(any())).thenReturn(new CategoryEntity(category));
-        RestResponse<Category> actualResult = categoryService.updateCategoryName(1, category);
+        when(categoryRepository.save(any())).thenReturn(new CategoryEntity(categoryDto));
+        RestResponse<CategoryDto> actualResult = categoryService.updateCategoryName(1, categoryDto);
 
         assertEquals(SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
-        assertEquals(category.getCategoryName(), actualResult.getData().getCategoryName());
+        assertEquals(categoryDto.getCategoryName(), actualResult.getData().getCategoryName());
     }
 
     @Test
     @Tag("updateCategory")
     void testUpdateCategory_NotFound() {
         KooposException kooposException = assertThrows(KooposException.class,
-                () -> categoryService.updateCategoryName(anyInt(), new Category()));
+                () -> categoryService.updateCategoryName(anyInt(), new CategoryDto()));
         assertEquals(CATEGORY_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(CATEGORY_NOT_FOUND.getMessage(), kooposException.getMessage());
     }
@@ -137,9 +137,9 @@ public class CategoryServiceTest {
     @Test
     @Tag("deleteCategory")
     void testDeleteCategory_Success() {
-        final Category category = new Category("Category A");
-        final CategoryEntity categoryEntity = new CategoryEntity(category);
-        categoryEntity.setInventories(new HashSet<>());
+        final CategoryDto categoryDto = new CategoryDto("Category A");
+        final CategoryEntity categoryEntity = new CategoryEntity(categoryDto);
+        categoryEntity.setProductEntities(new HashSet<>());
 
         when(categoryRepository.findById(anyInt())).thenReturn(Optional.of(categoryEntity));
         RestResponse<Object> actualResult = categoryService.deleteCategory(anyInt());
@@ -151,11 +151,11 @@ public class CategoryServiceTest {
     @Test
     @Tag("deleteCategory")
     void testDeleteCategory_CannotDeleteCategory() {
-        final Category category = new Category("Category A");
-        final CategoryEntity categoryEntity = new CategoryEntity(category);
-        final Item item = new Item("AA21", "Item A", "Item A Description",
+        final CategoryDto categoryDto = new CategoryDto("Category A");
+        final CategoryEntity categoryEntity = new CategoryEntity(categoryDto);
+        final ProductDto productDto = new ProductDto("AA21", "Item A", "Item A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), Collections.singleton("Category A"));
-        categoryEntity.setInventories(Collections.singleton(new InventoryEntity(item)));
+        categoryEntity.setProductEntities(Collections.singleton(new ProductEntity(productDto)));
 
         when(categoryRepository.findById(anyInt())).thenReturn(Optional.of(categoryEntity));
 
@@ -163,7 +163,7 @@ public class CategoryServiceTest {
                 () -> categoryService.deleteCategory(anyInt()));
         assertEquals(kooposException.getCode(), CANNOT_DELETE_CATEGORY.getCode());
         assertEquals(kooposException.getMessage(), CANNOT_DELETE_CATEGORY.getMessage()
-                + ": " + "because there are " + categoryEntity.getInventories().size() + " items in this category");
+                + ": " + "because there are " + categoryEntity.getProductEntities().size() + " items in this category");
     }
 
     @Test

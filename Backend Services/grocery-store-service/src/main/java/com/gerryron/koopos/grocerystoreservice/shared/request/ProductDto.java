@@ -1,9 +1,9 @@
-package com.gerryron.koopos.grocerystoreservice.dto;
+package com.gerryron.koopos.grocerystoreservice.shared.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gerryron.koopos.grocerystoreservice.entity.CategoryEntity;
-import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
+import com.gerryron.koopos.grocerystoreservice.entity.ProductEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Item {
+public class ProductDto {
     @NotNull
     private String barcode;
     @NotBlank
-    private String itemName;
+    private String productName;
     @NotNull
     private String description;
     @PositiveOrZero
@@ -41,10 +41,10 @@ public class Item {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Set<String> categories;
 
-    public Item(String barcode, String itemName, String description, Integer quantity,
-                BigDecimal buyingPrice, BigDecimal sellingPrice, Set<String> categories) {
+    public ProductDto(String barcode, String productName, String description, Integer quantity,
+                      BigDecimal buyingPrice, BigDecimal sellingPrice, Set<String> categories) {
         this.barcode = barcode;
-        this.itemName = itemName;
+        this.productName = productName;
         this.description = description;
         this.quantity = quantity;
         this.buyingPrice = buyingPrice;
@@ -52,21 +52,21 @@ public class Item {
         this.categories = categories;
     }
 
-    public Item(InventoryEntity inventoryEntity) {
-        this.barcode = inventoryEntity.getBarcode();
-        this.itemName = inventoryEntity.getItemName();
-        this.description = inventoryEntity.getDescription();
-        this.quantity = inventoryEntity.getQuantity();
-        this.buyingPrice = inventoryEntity.getBuyingPrice();
-        this.sellingPrice = inventoryEntity.getSellingPrice();
-        this.createdDate = inventoryEntity.getCreatedDate();
-        this.updatedDate = inventoryEntity.getUpdatedDate();
+    public ProductDto(ProductEntity productEntity) {
+        this.barcode = productEntity.getBarcode();
+        this.productName = productEntity.getProductName();
+        this.description = productEntity.getDescription();
+        this.quantity = productEntity.getQuantity();
+        this.buyingPrice = productEntity.getBuyingPrice();
+        this.sellingPrice = productEntity.getSellingPrice();
+        this.createdDate = productEntity.getCreatedDate();
+        this.updatedDate = productEntity.getUpdatedDate();
     }
 
-    public Item(InventoryEntity inventoryEntity, boolean withCategories) {
-        this(inventoryEntity);
-        if (withCategories && null != inventoryEntity.getCategories()) {
-            this.categories = inventoryEntity.getCategories().stream()
+    public ProductDto(ProductEntity productEntity, boolean withCategories) {
+        this(productEntity);
+        if (withCategories && null != productEntity.getCategories()) {
+            this.categories = productEntity.getCategories().stream()
                     .map(CategoryEntity::getName)
                     .collect(Collectors.toSet());
         }

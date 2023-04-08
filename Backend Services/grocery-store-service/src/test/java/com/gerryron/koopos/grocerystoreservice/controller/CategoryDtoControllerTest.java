@@ -1,6 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
+import com.gerryron.koopos.grocerystoreservice.shared.request.CategoryDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class CategoryControllerTest {
+public class CategoryDtoControllerTest {
 
     @Autowired
     private ServletWebServerApplicationContext webServerApplicationContext;
@@ -33,9 +33,9 @@ public class CategoryControllerTest {
     @Test
     @Tag("getPaginatedCategories")
     @SqlGroup({
-            @Sql("classpath:data/db/inventory.sql"),
+            @Sql("classpath:data/db/product.sql"),
             @Sql("classpath:data/db/category.sql"),
-            @Sql("classpath:data/db/inventory_categories.sql")
+            @Sql("classpath:data/db/product_categories.sql")
     })
     void shouldGetPaginatedCategoriesReturnOK() {
         given()
@@ -58,9 +58,9 @@ public class CategoryControllerTest {
     @Test
     @Tag("getCategory")
     @SqlGroup({
-            @Sql("classpath:data/db/inventory.sql"),
+            @Sql("classpath:data/db/product.sql"),
             @Sql("classpath:data/db/category.sql"),
-            @Sql("classpath:data/db/inventory_categories.sql")
+            @Sql("classpath:data/db/product_categories.sql")
     })
     void shouldGetCategoryByIdReturnOK() {
         given()
@@ -75,16 +75,16 @@ public class CategoryControllerTest {
                 .body("responseStatus.responseMessage", is(SUCCESS.getMessage()))
                 .body("data.id", is(1))
                 .body("data.categoryName", is("Category A"))
-                .body("data.inventories", hasSize(1))
+                .body("data.products", hasSize(1))
                 .body("data.errorDetails", nullValue());
     }
 
     @Test
     @Tag("getCategory")
     @SqlGroup({
-            @Sql("classpath:data/db/inventory.sql"),
+            @Sql("classpath:data/db/product.sql"),
             @Sql("classpath:data/db/category.sql"),
-            @Sql("classpath:data/db/inventory_categories.sql")
+            @Sql("classpath:data/db/product_categories.sql")
     })
     void shouldGetCategoryByCategoryNameReturnOK() {
         given()
@@ -99,7 +99,7 @@ public class CategoryControllerTest {
                 .body("responseStatus.responseMessage", is(SUCCESS.getMessage()))
                 .body("data.id", is(1))
                 .body("data.categoryName", is("Category A"))
-                .body("data.inventories", hasSize(1))
+                .body("data.products", hasSize(1))
                 .body("data.errorDetails", nullValue());
     }
 
@@ -110,7 +110,7 @@ public class CategoryControllerTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .pathParam("id", "1")
-                .body(new Category("Category A Updated"))
+                .body(new CategoryDto("Category A Updated"))
                 .when()
                 .put("/api/categories/category/{id}")
                 .then()

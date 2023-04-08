@@ -1,7 +1,7 @@
 package com.gerryron.koopos.grocerystoreservice.entity;
 
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
+import com.gerryron.koopos.grocerystoreservice.shared.request.CategoryDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,16 +24,17 @@ public class CategoryEntity {
     @Column(nullable = false)
     private String name;
     private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
 
     @ManyToMany(mappedBy = "categories", fetch = FetchType.EAGER)
-    private Set<InventoryEntity> inventories;
+    private Set<ProductEntity> productEntities;
 
     public CategoryEntity(String categoryName) {
         this.name = categoryName;
     }
 
-    public CategoryEntity(Category category) {
-        this.name = category.getCategoryName();
+    public CategoryEntity(CategoryDto categoryDto) {
+        this.name = categoryDto.getCategoryName();
     }
 
     @PrePersist

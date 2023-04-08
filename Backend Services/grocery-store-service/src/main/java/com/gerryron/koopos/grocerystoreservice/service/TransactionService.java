@@ -1,13 +1,13 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.dto.ResponseStatus;
-import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
-import com.gerryron.koopos.grocerystoreservice.dto.request.TransactionRequest;
-import com.gerryron.koopos.grocerystoreservice.entity.InventoryEntity;
+import com.gerryron.koopos.grocerystoreservice.shared.response.ResponseStatus;
+import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
+import com.gerryron.koopos.grocerystoreservice.shared.request.TransactionRequest;
+import com.gerryron.koopos.grocerystoreservice.entity.ProductEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.TransactionDetailsEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.TransactionEntity;
 import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
-import com.gerryron.koopos.grocerystoreservice.repository.InventoryRepository;
+import com.gerryron.koopos.grocerystoreservice.repository.ProductRepository;
 import com.gerryron.koopos.grocerystoreservice.repository.TransactionDetailsRepository;
 import com.gerryron.koopos.grocerystoreservice.repository.TransactionRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
@@ -21,14 +21,14 @@ import java.math.BigDecimal;
 @Service
 public class TransactionService {
 
-    private final InventoryRepository inventoryRepository;
+    private final ProductRepository productRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionDetailsRepository transactionDetailsRepository;
 
-    public TransactionService(InventoryRepository inventoryRepository,
+    public TransactionService(ProductRepository productRepository,
                               TransactionRepository transactionRepository,
                               TransactionDetailsRepository transactionDetailsRepository) {
-        this.inventoryRepository = inventoryRepository;
+        this.productRepository = productRepository;
         this.transactionRepository = transactionRepository;
         this.transactionDetailsRepository = transactionDetailsRepository;
     }
@@ -40,7 +40,7 @@ public class TransactionService {
         BigDecimal totalPrice = BigDecimal.ZERO;
         BigDecimal profit = BigDecimal.ZERO;
         for (TransactionRequest.ProductPurchased productPurchased : transactionRequest.getProductsPurchased()) {
-            InventoryEntity product = inventoryRepository.findById(productPurchased.getProductId()).orElseThrow(() ->
+            ProductEntity product = productRepository.findById(productPurchased.getProductId()).orElseThrow(() ->
                     new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND));
 
             totalPrice = totalPrice.add(product.getSellingPrice());

@@ -1,7 +1,7 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
-import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
-import com.gerryron.koopos.grocerystoreservice.dto.request.TransactionRequest;
+import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
+import com.gerryron.koopos.grocerystoreservice.shared.request.TransactionRequest;
 import com.gerryron.koopos.grocerystoreservice.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

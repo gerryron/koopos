@@ -1,0 +1,2 @@
+INSERT INTO product (id, barcode, product_name, description, quantity, buying_price, selling_price) values (1, 'AA21', 'Product A', 'Product A description', 20, 2800, 3000);
+INSERT INTO product (id, barcode, product_name, description, quantity, buying_price, selling_price) values (2, 'AA31', 'Product B', 'Product B description', 8, 8900, 9500);

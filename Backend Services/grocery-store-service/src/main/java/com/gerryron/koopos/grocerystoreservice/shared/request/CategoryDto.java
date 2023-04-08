@@ -1,4 +1,4 @@
-package com.gerryron.koopos.grocerystoreservice.dto;
+package com.gerryron.koopos.grocerystoreservice.shared.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Category {
+public class CategoryDto {
     private Integer id;
     @NotBlank
     private String categoryName;
@@ -25,28 +25,28 @@ public class Category {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer itemTotal;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Set<Item> inventories;
+    private Set<ProductDto> products;
 
-    public Category(String categoryName) {
+    public CategoryDto(String categoryName) {
         this.categoryName = categoryName;
     }
 
-    public Category(CategoryEntity categoryEntity) {
+    public CategoryDto(CategoryEntity categoryEntity) {
         this.id = categoryEntity.getId();
         this.categoryName = categoryEntity.getName();
         this.createdDate = categoryEntity.getCreatedDate();
-        if (null != categoryEntity.getInventories()) {
-            this.itemTotal = categoryEntity.getInventories().size();
+        if (null != categoryEntity.getProductEntities()) {
+            this.itemTotal = categoryEntity.getProductEntities().size();
         } else {
             this.itemTotal = 0;
         }
     }
 
-    public Category(CategoryEntity categoryEntity, boolean withInventories) {
+    public CategoryDto(CategoryEntity categoryEntity, boolean withProducts) {
         this(categoryEntity);
-        if (withInventories && null != categoryEntity.getInventories()) {
-            this.inventories = categoryEntity.getInventories().stream()
-                    .map(item -> new Item(item, false))
+        if (withProducts && null != categoryEntity.getProductEntities()) {
+            this.products = categoryEntity.getProductEntities().stream()
+                    .map(item -> new ProductDto(item, false))
                     .collect(Collectors.toSet());
         }
     }

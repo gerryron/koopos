@@ -1,7 +1,7 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
 
-import com.gerryron.koopos.grocerystoreservice.dto.Item;
+import com.gerryron.koopos.grocerystoreservice.shared.request.ProductDto;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,69 +23,69 @@ import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-class InventoryControllerTest {
+class ProductControllerTest {
 
     @Autowired
     private ServletWebServerApplicationContext webServerApplicationContext;
 
     @Test
-    @Tag("saveItem")
-    void shouldSaveItemReturnOK() {
+    @Tag("saveProduct")
+    void shouldSaveProductReturnOK() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(new Item("AA21", "Item A", "Item A Description", 20,
+                .body(new ProductDto("AA21", "Product A", "Product A Description", 20,
                         new BigDecimal(2800), new BigDecimal(3000), null))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()
-                .post("/api/inventory")
+                .post("/api/products")
                 .then()
                 .log().all()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
-                .body("data.itemName", is("Item A"))
+                .body("data.productName", is("Product A"))
                 .body("data.quantity", is(20))
                 .body("detailsError", nullValue());
     }
 
     @Test
-    @Tag("saveItem")
-    void shouldSaveItemWithCategoriesReturnOK() {
-        Item expectedItem = new Item("AA21", "Item A", "Item A Description",
+    @Tag("saveProduct")
+    void shouldSaveProductWithCategoriesReturnOK() {
+        ProductDto expectedProductDto = new ProductDto("AA21", "Product A", "Product A Description",
                 20, new BigDecimal(2800), new BigDecimal(3000), null);
-        expectedItem.setCategories(Collections.singleton("Category A"));
+        expectedProductDto.setCategories(Collections.singleton("Category A"));
 
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(expectedItem)
+                .body(expectedProductDto)
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()
-                .post("/api/inventory")
+                .post("/api/products")
                 .then()
                 .log().all()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
-                .body("data.itemName", is(expectedItem.getItemName()))
-                .body("data.quantity", is(expectedItem.getQuantity()));
+                .body("data.productName", is(expectedProductDto.getProductName()))
+                .body("data.quantity", is(expectedProductDto.getQuantity()));
     }
 
     @Test
-    @Tag("saveItem")
-    @Sql("classpath:data/db/inventory.sql")
-    void shouldSaveItemReturnItemAlreadyExists() {
+    @Tag("saveProduct")
+    @Sql("classpath:data/db/product.sql")
+    void shouldSaveProductReturnProductAlreadyExists() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(new Item("AA21", "Item A", "Item A Description", 20,
+                .body(new ProductDto("AA21", "Product A", "Product A Description", 20,
                         new BigDecimal(2800), new BigDecimal(3000), null))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()
-                .post("/api/inventory")
+                .post("/api/products")
                 .then()
                 .log().all()
                 .assertThat()
@@ -97,16 +97,16 @@ class InventoryControllerTest {
     }
 
     @Test
-    @Tag("saveItem")
-    void shouldSaveItemReturnValidationError() {
+    @Tag("saveProduct")
+    void shouldSaveProductReturnValidationError() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(new Item(null, "", null, -20,
+                .body(new ProductDto(null, "", null, -20,
                         new BigDecimal(0), new BigDecimal(0), null))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()
-                .post("/api/inventory")
+                .post("/api/products")
                 .then()
                 .log().all()
                 .assertThat()
@@ -118,12 +118,12 @@ class InventoryControllerTest {
     }
 
     @Test
-    @Tag("getPaginatedInventories")
-    @Sql("classpath:data/db/inventory.sql")
-    void shouldGetPaginatedInventoriesReturnOK() {
+    @Tag("getPaginatedProducts")
+    @Sql("classpath:data/db/product.sql")
+    void shouldGetPaginatedProductsReturnOK() {
         given()
                 .when()
-                .get("/api/inventory")
+                .get("/api/products")
                 .then()
                 .log().all()
                 .assertThat()
@@ -137,13 +137,13 @@ class InventoryControllerTest {
     }
 
     @Test
-    @Tag("getItem")
-    @Sql("classpath:data/db/inventory.sql")
-    void shouldGetItemReturnOK_Barcode() {
+    @Tag("getProduct")
+    @Sql("classpath:data/db/product.sql")
+    void shouldGetProductReturnOK_Barcode() {
         given()
                 .queryParam("barcode", "AA21")
                 .when()
-                .get("/api/inventory/item")
+                .get("/api/products/product")
                 .then()
                 .log().all()
                 .assertThat()
@@ -156,30 +156,30 @@ class InventoryControllerTest {
     }
 
     @Test
-    @Tag("getItem")
-    @Sql("classpath:data/db/inventory.sql")
-    void shouldGetItemReturnOK_ItemName() {
+    @Tag("getProduct")
+    @Sql("classpath:data/db/product.sql")
+    void shouldGetProductReturnOK_ProductName() {
         given()
-                .queryParam("itemName", "Item A")
+                .queryParam("productName", "Product A")
                 .when()
-                .get("/api/inventory/item")
+                .get("/api/products/product")
                 .then()
                 .log().all()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
-                .body("data.itemName", is("Item A"))
+                .body("data.productName", is("Product A"))
                 .body("detailsError", nullValue());
 
     }
 
     @Test
-    @Tag("getItem")
-    void shouldGetItemReturnInvalidParameter() {
+    @Tag("getProduct")
+    void shouldGetProductReturnInvalidParameter() {
         given()
                 .when()
-                .get("/api/inventory/item")
+                .get("/api/products/product")
                 .then()
                 .log().all()
                 .assertThat()
@@ -192,18 +192,18 @@ class InventoryControllerTest {
     }
 
     @Test
-    @Tag("putItem")
-    @Sql("classpath:data/db/inventory.sql")
-    void shouldPutItemReturnSuccess() {
+    @Tag("putProduct")
+    @Sql("classpath:data/db/product.sql")
+    void shouldPutProductReturnSuccess() {
         given()
                 .pathParam("barcode", "AA21")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(new Item("AA21", "Item A Update", "Item A Description Updated", 6,
+                .body(new ProductDto("AA21", "Product A Update", "Product A Description Updated", 6,
                         new BigDecimal(12800), new BigDecimal(13000), Collections.singleton("Category A")))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()
-                .put("/api/inventory/item/{barcode}")
+                .put("/api/products/product/{barcode}")
                 .then()
                 .log().all()
                 .assertThat()
@@ -211,8 +211,8 @@ class InventoryControllerTest {
                 .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
                 .body("data.barcode", is("AA21"))
-                .body("data.itemName", is("Item A Update"))
-                .body("data.description", is("Item A Description Updated"))
+                .body("data.productName", is("Product A Update"))
+                .body("data.description", is("Product A Description Updated"))
                 .body("data.quantity", is(6))
                 .body("data.buyingPrice", is(12800))
                 .body("data.sellingPrice", is(13000))
@@ -221,16 +221,16 @@ class InventoryControllerTest {
     }
 
     @Test
-    @Tag("deleteItem")
-    @Sql("classpath:data/db/inventory.sql")
-    void shouldDeleteItemReturnSuccess() {
+    @Tag("deleteProduct")
+    @Sql("classpath:data/db/product.sql")
+    void shouldDeleteProductReturnSuccess() {
         given()
                 .pathParam("barcode", "AA21")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()
-                .delete("/api/inventory/item/{barcode}")
+                .delete("/api/products/product/{barcode}")
                 .then()
                 .log().all()
                 .assertThat()

@@ -1,8 +1,8 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
-import com.gerryron.koopos.grocerystoreservice.dto.Category;
-import com.gerryron.koopos.grocerystoreservice.dto.PaginatedResponse;
-import com.gerryron.koopos.grocerystoreservice.dto.RestResponse;
+import com.gerryron.koopos.grocerystoreservice.shared.request.CategoryDto;
+import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
+import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<PaginatedResponse<List<Category>>> getPaginatedCategories(
+    public ResponseEntity<PaginatedResponse<List<CategoryDto>>> getPaginatedCategories(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
@@ -26,7 +26,7 @@ public class CategoryController {
     }
 
     @GetMapping("/category")
-    public ResponseEntity<RestResponse<Category>> getCategory(
+    public ResponseEntity<RestResponse<CategoryDto>> getCategory(
             @RequestParam(value = "id", defaultValue = "") Integer id,
             @RequestParam(value = "categoryName", defaultValue = "") String categoryName
     ) {
@@ -34,11 +34,11 @@ public class CategoryController {
     }
 
     @PutMapping(value = "/category/{id}")
-    public ResponseEntity<RestResponse<Category>> updateCategory(
+    public ResponseEntity<RestResponse<CategoryDto>> updateCategory(
             @PathVariable(value = "id") Integer id,
-            @RequestBody Category category
+            @RequestBody CategoryDto categoryDto
     ) {
-        return ResponseEntity.ok(categoryService.updateCategoryName(id, category));
+        return ResponseEntity.ok(categoryService.updateCategoryName(id, categoryDto));
     }
 
     @DeleteMapping("/category/{id}")
