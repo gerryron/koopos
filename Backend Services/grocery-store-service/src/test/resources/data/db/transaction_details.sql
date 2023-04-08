@@ -1,0 +1,2 @@
+INSERT INTO transaction_details (id, transaction_number, product_id, amount, price, created_date) VALUES (1, 'transactionNumber01', 1, 2, 3000, '2023-04-09 02:05:00');
+INSERT INTO transaction_details (id, transaction_number, product_id, amount, price, created_date) VALUES (2, 'transactionNumber01', 2, 1, 9500, '2023-04-09 02:06:00');

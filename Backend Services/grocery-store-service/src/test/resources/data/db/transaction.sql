@@ -1,0 +1,1 @@
+INSERT INTO transaction (id, transaction_number, amount, total_price, profit, created_date) VALUES (1, 'transactionNumber01', 2, 15500, 1000, '2023-04-09 02:04:00');

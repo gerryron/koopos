@@ -11,7 +11,10 @@ import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import com.gerryron.koopos.grocerystoreservice.shared.dto.ResponseStatus;
 import com.gerryron.koopos.grocerystoreservice.shared.request.TransactionRequest;
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
+import com.gerryron.koopos.grocerystoreservice.shared.response.TransactionResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -19,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -71,6 +75,48 @@ public class TransactionService {
 
         return RestResponse.builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .build();
+    }
+
+    public RestResponse<List<TransactionResponse>> findPaginatedTransaction(PageRequest pageRequest) {
+        Page<TransactionEntity> transactionEntities = transactionRepository.findAll(pageRequest);
+        List<TransactionResponse> transactionResponses = transactionEntities.getContent()
+                .stream()
+                .map(transactionEntity -> {
+                    List<TransactionDetailsEntity> transactionDetails = transactionDetailsRepository
+                            .findAllByTransactionNumber(transactionEntity.getTransactionNumber());
+
+                    List<TransactionResponse.TransactionDetail> transactionDetailResponse = transactionDetails
+                            .stream()
+                            .map(transactionDetail -> {
+                                ProductEntity productEntity = productRepository
+                                        .findById(transactionDetail.getProductId())
+                                        .orElseThrow(() -> new KooposException(ApplicationCode.PRODUCT_NOT_FOUND));
+
+                                return TransactionResponse.TransactionDetail.builder()
+                                        .id(transactionDetail.getId())
+                                        .productName(productEntity.getProductName())
+                                        .amount(transactionDetail.getAmount())
+                                        .price(transactionDetail.getPrice())
+                                        .createdDate(transactionDetail.getCreatedDate())
+                                        .build();
+                            })
+                            .collect(Collectors.toList());
+
+                    return TransactionResponse.builder()
+                            .transactionNumber(transactionEntity.getTransactionNumber())
+                            .amount(transactionEntity.getAmount())
+                            .totalPrice(transactionEntity.getTotalPrice())
+                            .profit(transactionEntity.getProfit())
+                            .transactionDetails(transactionDetailResponse)
+                            .createdDate(transactionEntity.getCreatedDate())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return RestResponse.<List<TransactionResponse>>builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .data(transactionResponses)
                 .build();
     }
 }
