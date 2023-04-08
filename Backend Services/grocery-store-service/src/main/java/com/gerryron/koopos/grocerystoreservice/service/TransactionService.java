@@ -10,6 +10,7 @@ import com.gerryron.koopos.grocerystoreservice.repository.TransactionRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import com.gerryron.koopos.grocerystoreservice.shared.dto.ResponseStatus;
 import com.gerryron.koopos.grocerystoreservice.shared.request.TransactionRequest;
+import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.shared.response.TransactionResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -78,7 +79,7 @@ public class TransactionService {
                 .build();
     }
 
-    public RestResponse<List<TransactionResponse>> findPaginatedTransaction(PageRequest pageRequest) {
+    public PaginatedResponse<List<TransactionResponse>> findPaginatedTransaction(PageRequest pageRequest) {
         Page<TransactionEntity> transactionEntities = transactionRepository.findAll(pageRequest);
         List<TransactionResponse> transactionResponses = transactionEntities.getContent()
                 .stream()
@@ -114,9 +115,14 @@ public class TransactionService {
                 })
                 .collect(Collectors.toList());
 
-        return RestResponse.<List<TransactionResponse>>builder()
+        return PaginatedResponse.<List<TransactionResponse>>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .data(transactionResponses)
+                .detailPages(PaginatedResponse.PagingMetadata.builder()
+                        .page(transactionEntities.getNumber() + 1)
+                        .rowPerPage(pageRequest.getPageSize())
+                        .totalData(transactionEntities.getTotalElements())
+                        .build())
                 .build();
     }
 

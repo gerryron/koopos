@@ -60,7 +60,7 @@ class TransactionControllerTest {
     @Sql("classpath:data/db/product.sql")
     @Sql("classpath:data/db/transaction.sql")
     @Sql("classpath:data/db/transaction_details.sql")
-    void shouldGetPaginatedTransaction_ReturnSuccess() {
+    void shouldGetPaginatedTransactions_ReturnSuccess() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .when()
@@ -70,7 +70,26 @@ class TransactionControllerTest {
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
-                .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()));
+                .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
+                .body("data", hasSize(1))
+                .body("data[0].transactionNumber", is("transactionNumber01"))
+                .body("data[0].amount", is(2))
+                .body("data[0].totalPrice", is(15500.0F))
+                .body("data[0].profit", is(1000.00F))
+                .body("data[0].transactionDetails", hasSize(2))
+                .body("data[0].transactionDetails[0].id", is(1))
+                .body("data[0].transactionDetails[0].productName", is("Product A"))
+                .body("data[0].transactionDetails[0].amount", is(2))
+                .body("data[0].transactionDetails[0].price", is(3000.00F))
+                .body("data[0].transactionDetails[0].createdDate", notNullValue())
+                .body("data[0].transactionDetails[1].id", is(2))
+                .body("data[0].transactionDetails[1].productName", is("Product B"))
+                .body("data[0].transactionDetails[1].amount", is(1))
+                .body("data[0].transactionDetails[1].price", is(9500.00F))
+                .body("data[0].transactionDetails[1].createdDate", notNullValue())
+                .body("detailPages.page", is(1))
+                .body("detailPages.rowPerPage", is(10))
+                .body("detailPages.totalData", is(1));
     }
 
     @Test

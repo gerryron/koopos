@@ -10,6 +10,7 @@ import com.gerryron.koopos.grocerystoreservice.repository.TransactionRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import com.gerryron.koopos.grocerystoreservice.shared.dto.Product;
 import com.gerryron.koopos.grocerystoreservice.shared.request.TransactionRequest;
+import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.shared.response.TransactionResponse;
 import org.junit.jupiter.api.Test;
@@ -150,7 +151,7 @@ class TransactionServiceTest {
                 .thenReturn(transactionDetailsEntities);
         when(productRepository.findById(anyInt()))
                 .thenReturn(Optional.of(new ProductEntity(product)));
-        RestResponse<List<TransactionResponse>> response = transactionService
+        PaginatedResponse<List<TransactionResponse>> response = transactionService
                 .findPaginatedTransaction(pageRequest);
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), response.getResponseStatus().getResponseCode());
@@ -167,7 +168,9 @@ class TransactionServiceTest {
         assertEquals(transactionDetailsEntity.getAmount(), response.getData().get(0).getTransactionDetails().get(0).getAmount());
         assertEquals(transactionDetailsEntity.getPrice(), response.getData().get(0).getTransactionDetails().get(0).getPrice());
         assertEquals(transactionDetailsEntity.getCreatedDate(), response.getData().get(0).getTransactionDetails().get(0).getCreatedDate());
-        assertNull(response.getErrorDetails());
+        assertEquals(1, response.getDetailPages().getPage());
+        assertEquals(10, response.getDetailPages().getRowPerPage());
+        assertEquals(transactionEntities.size(), response.getDetailPages().getTotalData());
     }
 
     @Test
