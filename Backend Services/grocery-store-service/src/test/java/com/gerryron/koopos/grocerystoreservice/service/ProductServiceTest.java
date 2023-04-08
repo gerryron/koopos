@@ -6,7 +6,7 @@ import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
 import com.gerryron.koopos.grocerystoreservice.repository.ProductRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
-import com.gerryron.koopos.grocerystoreservice.shared.request.ProductDto;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.Product;
 import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import org.junit.jupiter.api.Tag;
@@ -22,7 +22,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,17 +47,14 @@ class ProductServiceTest {
     @Test
     @Tag("createProduct")
     void testCreateProduct_SuccessWithoutCategories() {
-        ProductDto expectedProductDto = new ProductDto("AA21", "Product A", "Product A Description",
+        Product expectedProduct = new Product("AA21", "Product A", "Product A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
-        expectedProductDto.setUpdatedDate(LocalDateTime.MIN);
 
-        RestResponse<ProductDto> actualResult = productService.createProduct(expectedProductDto);
+        RestResponse<Product> actualResult = productService.createProduct(expectedProduct);
 
         verify(productRepository).save(productEntityArgumentCaptor.capture());
         ProductEntity valueCaptor = productEntityArgumentCaptor.getValue();
-        assertEquals(expectedProductDto.getProductName(), valueCaptor.getProductName());
-        assertNotNull(valueCaptor.getUpdatedDate());
-        assertNotEquals(expectedProductDto.getUpdatedDate(), valueCaptor.getUpdatedDate());
+        assertEquals(expectedProduct.getProductName(), valueCaptor.getProductName());
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertNotNull(actualResult.getData());
@@ -68,17 +64,17 @@ class ProductServiceTest {
     @Tag("createProduct")
     void testCreateProduct_SuccessWithCategories() {
         final String expectedCategory = "Category A";
-        ProductDto expectedProductDto = new ProductDto("AA21", "Product A", "Product A Description",
+        Product expectedProduct = new Product("AA21", "Product A", "Product A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000),
                 Collections.singleton(expectedCategory));
 
         when(categoryRepository.findFirstByName(anyString()))
                 .thenReturn(Optional.of(new CategoryEntity(expectedCategory)));
-        RestResponse<ProductDto> actualResult = productService.createProduct(expectedProductDto);
+        RestResponse<Product> actualResult = productService.createProduct(expectedProduct);
 
         verify(productRepository).save(productEntityArgumentCaptor.capture());
         ProductEntity valueCaptor = productEntityArgumentCaptor.getValue();
-        assertEquals(expectedProductDto.getProductName(), valueCaptor.getProductName());
+        assertEquals(expectedProduct.getProductName(), valueCaptor.getProductName());
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertNotNull(actualResult.getData());
@@ -88,16 +84,16 @@ class ProductServiceTest {
     @Tag("createProduct")
     void testCreateProduct_ProductAlreadyExists() {
         final String barcode = "AA21";
-        final ProductDto expectedProductDto = new ProductDto(barcode, "Product A", "Product A Description",
+        final Product expectedProduct = new Product(barcode, "Product A", "Product A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
-        final ProductDto existingProductDto = new ProductDto(barcode, "Product Z", "Product Z Description",
+        final Product existingProduct = new Product(barcode, "Product Z", "Product Z Description",
                 5, new BigDecimal(80000), new BigDecimal(85000), null);
 
         when(productRepository.findByBarcode(barcode))
-                .thenReturn(Optional.of(new ProductEntity(existingProductDto)));
+                .thenReturn(Optional.of(new ProductEntity(existingProduct)));
 
         KooposException kooposException = assertThrows(KooposException.class,
-                () -> productService.createProduct(expectedProductDto));
+                () -> productService.createProduct(expectedProduct));
         assertEquals(kooposException.getCode(), ApplicationCode.ITEM_ALREADY_EXISTS.getCode());
         assertEquals(kooposException.getMessage(), ApplicationCode.ITEM_ALREADY_EXISTS.getMessage());
     }
@@ -105,23 +101,23 @@ class ProductServiceTest {
     @Test
     @Tag("findPaginatedProducts")
     void testFindPaginatedProducts() {
-        final ProductDto expectedProductDto1 = new ProductDto("AA21", "Product A", "Product A Description",
+        final Product expectedProduct1 = new Product("AA21", "Product A", "Product A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
-        final ProductDto expectedProductDto2 = new ProductDto("AA22", "Product B", "Product B Description",
+        final Product expectedProduct2 = new Product("AA22", "Product B", "Product B Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
-        List<ProductEntity> expectedResult = List.of(new ProductEntity(expectedProductDto1),
-                new ProductEntity(expectedProductDto2));
+        List<ProductEntity> expectedResult = List.of(new ProductEntity(expectedProduct1),
+                new ProductEntity(expectedProduct2));
 
         when(productRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"))))
                 .thenReturn(new PageImpl<>(expectedResult));
-        PaginatedResponse<List<ProductDto>> actualResult = productService.findPaginatedProducts(0, 10,
+        PaginatedResponse<List<Product>> actualResult = productService.findPaginatedProducts(0, 10,
                 "id", "asc");
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
         assertEquals(2, actualResult.getData().size());
-        assertEquals(expectedProductDto1.getBarcode(), actualResult.getData().get(0).getBarcode());
-        assertEquals(expectedProductDto2.getBarcode(), actualResult.getData().get(1).getBarcode());
+        assertEquals(expectedProduct1.getBarcode(), actualResult.getData().get(0).getBarcode());
+        assertEquals(expectedProduct2.getBarcode(), actualResult.getData().get(1).getBarcode());
         assertEquals(1, actualResult.getDetailPages().getPage());
         assertEquals(10, actualResult.getDetailPages().getRowPerPage());
         assertEquals(2, actualResult.getDetailPages().getTotalData());
@@ -130,34 +126,34 @@ class ProductServiceTest {
     @Test
     @Tag("findProduct")
     void testFindProductByBarcode_SuccessFindBarcode() {
-        final ProductDto expectedProductDto = new ProductDto("AA21", "Product A", "Product A Description",
+        final Product expectedProduct = new Product("AA21", "Product A", "Product A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
 
         when(productRepository.findByBarcode(anyString()))
-                .thenReturn(Optional.of(new ProductEntity(expectedProductDto)));
-        RestResponse<ProductDto> actualResult = productService.findProduct(expectedProductDto.getBarcode(), "");
+                .thenReturn(Optional.of(new ProductEntity(expectedProduct)));
+        RestResponse<Product> actualResult = productService.findProduct(expectedProduct.getBarcode(), "");
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
-        assertEquals(expectedProductDto.getBarcode(), actualResult.getData().getBarcode());
-        assertEquals(expectedProductDto.getProductName(), actualResult.getData().getProductName());
+        assertEquals(expectedProduct.getBarcode(), actualResult.getData().getBarcode());
+        assertEquals(expectedProduct.getProductName(), actualResult.getData().getProductName());
         assertNull(actualResult.getErrorDetails());
     }
 
     @Test
     @Tag("findProduct")
     void testFindProductByBarcode_SuccessFindProductName() {
-        final ProductDto expectedProductDto = new ProductDto("AA21", "Product A", "Product A Description",
+        final Product expectedProduct = new Product("AA21", "Product A", "Product A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), null);
 
         when(productRepository.findByProductName(anyString()))
-                .thenReturn(Optional.of(new ProductEntity(expectedProductDto)));
-        RestResponse<ProductDto> actualResult = productService.findProduct("", expectedProductDto.getProductName());
+                .thenReturn(Optional.of(new ProductEntity(expectedProduct)));
+        RestResponse<Product> actualResult = productService.findProduct("", expectedProduct.getProductName());
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), actualResult.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), actualResult.getResponseStatus().getResponseMessage());
-        assertEquals(expectedProductDto.getBarcode(), actualResult.getData().getBarcode());
-        assertEquals(expectedProductDto.getProductName(), actualResult.getData().getProductName());
+        assertEquals(expectedProduct.getBarcode(), actualResult.getData().getBarcode());
+        assertEquals(expectedProduct.getProductName(), actualResult.getData().getProductName());
         assertNull(actualResult.getErrorDetails());
     }
 
@@ -195,20 +191,20 @@ class ProductServiceTest {
         Set<String> categories = new HashSet<>();
         categories.add("Category A");
         categories.add("Category B");
-        final ProductDto productDto = new ProductDto(barcode, "Product A", "Product A Description",
+        final Product product = new Product(barcode, "Product A", "Product A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), categories);
-        final ProductDto updatedProductDto = new ProductDto(barcode, "Product A", "Product A Description Updated",
+        final Product updatedProduct = new Product(barcode, "Product A", "Product A Description Updated",
                 16, new BigDecimal(2000), new BigDecimal(3000), Collections.singleton("Category B"));
 
-        when(productRepository.findByBarcode(barcode)).thenReturn(Optional.of(new ProductEntity(productDto)));
-        when(productRepository.save(any())).thenReturn(new ProductEntity(updatedProductDto));
-        RestResponse<ProductDto> actualResult = productService.updateProduct(barcode, productDto);
+        when(productRepository.findByBarcode(barcode)).thenReturn(Optional.of(new ProductEntity(product)));
+        when(productRepository.save(any())).thenReturn(new ProductEntity(updatedProduct));
+        RestResponse<Product> actualResult = productService.updateProduct(barcode, product);
 
         assertEquals(actualResult.getResponseStatus().getResponseCode(), ApplicationCode.SUCCESS.getCode());
         assertEquals(actualResult.getResponseStatus().getResponseMessage(), ApplicationCode.SUCCESS.getMessage());
         assertEquals(actualResult.getData().getBarcode(), barcode);
-        assertEquals(actualResult.getData().getDescription(), updatedProductDto.getDescription());
-        assertEquals(actualResult.getData().getCategories().size(), updatedProductDto.getCategories().size());
+        assertEquals(actualResult.getData().getDescription(), updatedProduct.getDescription());
+        assertEquals(actualResult.getData().getCategories().size(), updatedProduct.getCategories().size());
         assertNull(actualResult.getErrorDetails());
     }
 
@@ -216,7 +212,7 @@ class ProductServiceTest {
     @Tag("updateProduct")
     void testUpdateProduct_BARCODE_NOT_FOUND() {
         KooposException kooposException = assertThrows(KooposException.class,
-                () -> productService.updateProduct("ASAL", new ProductDto()));
+                () -> productService.updateProduct("ASAL", new Product()));
         assertEquals(kooposException.getCode(), ApplicationCode.BARCODE_NOT_FOUND.getCode());
         assertEquals(kooposException.getMessage(), ApplicationCode.BARCODE_NOT_FOUND.getMessage());
     }
@@ -225,10 +221,10 @@ class ProductServiceTest {
     @Tag("deleteProduct")
     void testDeleteProduct_Success() {
         final String barcode = "AA21";
-        final ProductDto productDto = new ProductDto(barcode, "Product A", "Product A Description",
+        final Product product = new Product(barcode, "Product A", "Product A Description",
                 20, new BigDecimal(2000), new BigDecimal(3000), Collections.singleton("Category A"));
 
-        when(productRepository.findByBarcode(barcode)).thenReturn(Optional.of(new ProductEntity(productDto)));
+        when(productRepository.findByBarcode(barcode)).thenReturn(Optional.of(new ProductEntity(product)));
         RestResponse<Object> actualResult = productService.deleteProduct(barcode);
 
         verify(productRepository).delete(productEntityArgumentCaptor.capture());

@@ -1,5 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.shared.response;
 
+import com.gerryron.koopos.grocerystoreservice.shared.dto.ResponseStatus;
 import lombok.Builder;
 import lombok.Getter;
 

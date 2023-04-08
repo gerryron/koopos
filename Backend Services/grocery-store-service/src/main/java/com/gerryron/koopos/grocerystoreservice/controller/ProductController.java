@@ -1,7 +1,7 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
 import com.gerryron.koopos.grocerystoreservice.service.ProductService;
-import com.gerryron.koopos.grocerystoreservice.shared.request.ProductDto;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.Product;
 import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +19,12 @@ public class ProductController {
     private ProductService productService;
 
     @PostMapping
-    public ResponseEntity<RestResponse<ProductDto>> saveProduct(@RequestBody @Valid ProductDto productDto) {
-        return ResponseEntity.ok(productService.createProduct(productDto));
+    public ResponseEntity<RestResponse<Product>> saveProduct(@RequestBody @Valid Product product) {
+        return ResponseEntity.ok(productService.createProduct(product));
     }
 
     @GetMapping
-    public ResponseEntity<PaginatedResponse<List<ProductDto>>> getPaginatedProducts(
+    public ResponseEntity<PaginatedResponse<List<Product>>> getPaginatedProducts(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
@@ -35,7 +35,7 @@ public class ProductController {
     }
 
     @GetMapping("product")
-    public ResponseEntity<RestResponse<ProductDto>> getProduct(
+    public ResponseEntity<RestResponse<Product>> getProduct(
             @RequestParam(value = "barcode", defaultValue = "") String barcode,
             @RequestParam(value = "productName", defaultValue = "") String productName
     ) {
@@ -43,10 +43,10 @@ public class ProductController {
     }
 
     @PutMapping("/product/{barcode}")
-    public ResponseEntity<RestResponse<ProductDto>> putProduct(
+    public ResponseEntity<RestResponse<Product>> putProduct(
             @PathVariable(value = "barcode") String barcode,
-            @RequestBody @Valid ProductDto productDto) {
-        return ResponseEntity.ok((productService.updateProduct(barcode, productDto)));
+            @RequestBody @Valid Product product) {
+        return ResponseEntity.ok((productService.updateProduct(barcode, product)));
     }
 
     @DeleteMapping("/product/{barcode}")

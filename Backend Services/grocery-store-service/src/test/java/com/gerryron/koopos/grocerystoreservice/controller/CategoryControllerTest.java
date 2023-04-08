@@ -1,6 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
-import com.gerryron.koopos.grocerystoreservice.shared.request.CategoryDto;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.Category;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class CategoryDtoControllerTest {
+public class CategoryControllerTest {
 
     @Autowired
     private ServletWebServerApplicationContext webServerApplicationContext;
@@ -110,7 +110,7 @@ public class CategoryDtoControllerTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .pathParam("id", "1")
-                .body(new CategoryDto("Category A Updated"))
+                .body(new Category("Category A Updated"))
                 .when()
                 .put("/api/categories/category/{id}")
                 .then()

@@ -1,7 +1,7 @@
 package com.gerryron.koopos.grocerystoreservice.exception;
 
-import com.gerryron.koopos.grocerystoreservice.shared.response.ErrorDetail;
-import com.gerryron.koopos.grocerystoreservice.shared.response.ResponseStatus;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.ErrorDetail;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.ResponseStatus;
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import lombok.extern.slf4j.Slf4j;

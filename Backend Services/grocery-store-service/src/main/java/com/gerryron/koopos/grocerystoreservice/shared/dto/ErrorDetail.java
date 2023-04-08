@@ -1,4 +1,4 @@
-package com.gerryron.koopos.grocerystoreservice.shared.response;
+package com.gerryron.koopos.grocerystoreservice.shared.dto;
 
 import lombok.Builder;
 import lombok.Getter;

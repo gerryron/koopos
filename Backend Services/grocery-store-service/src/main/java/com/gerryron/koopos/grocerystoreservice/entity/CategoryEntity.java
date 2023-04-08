@@ -1,7 +1,7 @@
 package com.gerryron.koopos.grocerystoreservice.entity;
 
 
-import com.gerryron.koopos.grocerystoreservice.shared.request.CategoryDto;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.Category;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,8 +33,8 @@ public class CategoryEntity {
         this.name = categoryName;
     }
 
-    public CategoryEntity(CategoryDto categoryDto) {
-        this.name = categoryDto.getCategoryName();
+    public CategoryEntity(Category category) {
+        this.name = category.getCategoryName();
     }
 
     @PrePersist

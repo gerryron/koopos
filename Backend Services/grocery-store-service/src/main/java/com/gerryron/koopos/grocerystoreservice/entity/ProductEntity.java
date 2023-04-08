@@ -1,6 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.entity;
 
-import com.gerryron.koopos.grocerystoreservice.shared.request.ProductDto;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.Product;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,16 +37,15 @@ public class ProductEntity {
             inverseJoinColumns = @JoinColumn(name = "category_id", referencedColumnName = "id"))
     private Set<CategoryEntity> categories;
 
-    public ProductEntity(ProductDto productDto) {
-        this.barcode = productDto.getBarcode();
-        this.productName = productDto.getProductName();
-        this.description = productDto.getDescription();
-        this.quantity = productDto.getQuantity();
-        this.buyingPrice = productDto.getBuyingPrice();
-        this.sellingPrice = productDto.getSellingPrice();
-        this.updatedDate = LocalDateTime.now();
-        if (null != productDto.getCategories()) {
-            this.categories = productDto.getCategories().stream()
+    public ProductEntity(Product product) {
+        this.barcode = product.getBarcode();
+        this.productName = product.getProductName();
+        this.description = product.getDescription();
+        this.quantity = product.getQuantity();
+        this.buyingPrice = product.getBuyingPrice();
+        this.sellingPrice = product.getSellingPrice();
+        if (null != product.getCategories()) {
+            this.categories = product.getCategories().stream()
                     .map(CategoryEntity::new)
                     .collect(Collectors.toSet());
         }

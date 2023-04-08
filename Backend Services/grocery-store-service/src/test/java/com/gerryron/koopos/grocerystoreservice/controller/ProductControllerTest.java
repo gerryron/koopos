@@ -1,7 +1,7 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
 
-import com.gerryron.koopos.grocerystoreservice.shared.request.ProductDto;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.Product;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ class ProductControllerTest {
     void shouldSaveProductReturnOK() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(new ProductDto("AA21", "Product A", "Product A Description", 20,
+                .body(new Product("AA21", "Product A", "Product A Description", 20,
                         new BigDecimal(2800), new BigDecimal(3000), null))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
@@ -53,13 +53,13 @@ class ProductControllerTest {
     @Test
     @Tag("saveProduct")
     void shouldSaveProductWithCategoriesReturnOK() {
-        ProductDto expectedProductDto = new ProductDto("AA21", "Product A", "Product A Description",
+        Product expectedProduct = new Product("AA21", "Product A", "Product A Description",
                 20, new BigDecimal(2800), new BigDecimal(3000), null);
-        expectedProductDto.setCategories(Collections.singleton("Category A"));
+        expectedProduct.setCategories(Collections.singleton("Category A"));
 
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(expectedProductDto)
+                .body(expectedProduct)
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .when()
@@ -70,8 +70,8 @@ class ProductControllerTest {
                 .statusCode(HttpStatus.OK.value())
                 .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
-                .body("data.productName", is(expectedProductDto.getProductName()))
-                .body("data.quantity", is(expectedProductDto.getQuantity()));
+                .body("data.productName", is(expectedProduct.getProductName()))
+                .body("data.quantity", is(expectedProduct.getQuantity()));
     }
 
     @Test
@@ -80,7 +80,7 @@ class ProductControllerTest {
     void shouldSaveProductReturnProductAlreadyExists() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(new ProductDto("AA21", "Product A", "Product A Description", 20,
+                .body(new Product("AA21", "Product A", "Product A Description", 20,
                         new BigDecimal(2800), new BigDecimal(3000), null))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
@@ -101,7 +101,7 @@ class ProductControllerTest {
     void shouldSaveProductReturnValidationError() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(new ProductDto(null, "", null, -20,
+                .body(new Product(null, "", null, -20,
                         new BigDecimal(0), new BigDecimal(0), null))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)
@@ -198,7 +198,7 @@ class ProductControllerTest {
         given()
                 .pathParam("barcode", "AA21")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(new ProductDto("AA21", "Product A Update", "Product A Description Updated", 6,
+                .body(new Product("AA21", "Product A Update", "Product A Description Updated", 6,
                         new BigDecimal(12800), new BigDecimal(13000), Collections.singleton("Category A")))
                 .log().all()
                 .accept(MediaType.APPLICATION_JSON_VALUE)

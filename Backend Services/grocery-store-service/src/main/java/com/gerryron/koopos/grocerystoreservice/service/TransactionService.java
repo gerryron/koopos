@@ -1,8 +1,8 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.shared.response.ResponseStatus;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.ResponseStatus;
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
-import com.gerryron.koopos.grocerystoreservice.shared.request.TransactionRequest;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.Transaction;
 import com.gerryron.koopos.grocerystoreservice.entity.ProductEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.TransactionDetailsEntity;
 import com.gerryron.koopos.grocerystoreservice.entity.TransactionEntity;
@@ -34,27 +34,27 @@ public class TransactionService {
     }
 
     @Transactional
-    public RestResponse<Object> createTransaction(TransactionRequest transactionRequest) {
-        log.info("Process transaction with transactionNumber: {}", transactionRequest.getTransactionNumber());
+    public RestResponse<Object> createTransaction(Transaction transaction) {
+        log.info("Process transaction with transactionNumber: {}", transaction.getTransactionNumber());
 
         BigDecimal totalPrice = BigDecimal.ZERO;
         BigDecimal profit = BigDecimal.ZERO;
-        for (TransactionRequest.ProductPurchased productPurchased : transactionRequest.getProductsPurchased()) {
+        for (Transaction.ProductPurchased productPurchased : transaction.getProductsPurchased()) {
             ProductEntity product = productRepository.findById(productPurchased.getProductId()).orElseThrow(() ->
                     new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND));
 
             totalPrice = totalPrice.add(product.getSellingPrice());
             profit = profit.add(product.getSellingPrice().subtract(product.getBuyingPrice()));
             transactionDetailsRepository.save(TransactionDetailsEntity.builder()
-                    .transactionNumber(transactionRequest.getTransactionNumber())
+                    .transactionNumber(transaction.getTransactionNumber())
                     .inventoryId(product.getId())
                     .amount(productPurchased.getAmount())
                     .price(product.getSellingPrice())
                     .build());
         }
         transactionRepository.save(TransactionEntity.builder()
-                .transactionNumber(transactionRequest.getTransactionNumber())
-                .amount(transactionRequest.getProductsPurchased().size())
+                .transactionNumber(transaction.getTransactionNumber())
+                .amount(transaction.getProductsPurchased().size())
                 .totalPrice(totalPrice)
                 .profit(profit)
                 .build());

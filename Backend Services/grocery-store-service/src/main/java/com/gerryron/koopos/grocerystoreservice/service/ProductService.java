@@ -6,9 +6,9 @@ import com.gerryron.koopos.grocerystoreservice.exception.KooposException;
 import com.gerryron.koopos.grocerystoreservice.repository.CategoryRepository;
 import com.gerryron.koopos.grocerystoreservice.repository.ProductRepository;
 import com.gerryron.koopos.grocerystoreservice.shared.ApplicationCode;
-import com.gerryron.koopos.grocerystoreservice.shared.request.ProductDto;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.Product;
 import com.gerryron.koopos.grocerystoreservice.shared.response.PaginatedResponse;
-import com.gerryron.koopos.grocerystoreservice.shared.response.ResponseStatus;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.ResponseStatus;
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -37,15 +37,15 @@ public class ProductService {
     }
 
     @Transactional
-    public RestResponse<ProductDto> createProduct(ProductDto productDto) {
-        productRepository.findByBarcode(productDto.getBarcode()).ifPresent(s -> {
+    public RestResponse<Product> createProduct(Product product) {
+        productRepository.findByBarcode(product.getBarcode()).ifPresent(s -> {
             throw new KooposException(ApplicationCode.ITEM_ALREADY_EXISTS);
         });
 
-        ProductEntity productEntity = new ProductEntity(productDto);
-        if (null != productDto.getCategories()) {
+        ProductEntity productEntity = new ProductEntity(product);
+        if (null != product.getCategories()) {
             Set<CategoryEntity> categoryEntities = new HashSet<>();
-            for (String category : productDto.getCategories()) {
+            for (String category : product.getCategories()) {
                 CategoryEntity categoryEntity = new CategoryEntity(category);
                 categoryEntities.add(getCategoryEntityIfExists(categoryEntity));
             }
@@ -53,24 +53,24 @@ public class ProductService {
         }
 
         productRepository.save(productEntity);
-        log.info("Success create: {}", productDto);
-        return RestResponse.<ProductDto>builder()
+        log.info("Success create: {}", product);
+        return RestResponse.<Product>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(new ProductDto(productEntity, true))
+                .data(new Product(productEntity, true))
                 .build();
     }
 
-    public PaginatedResponse<List<ProductDto>> findPaginatedProducts(int page, int size, String sortBy, String sortDirection) {
+    public PaginatedResponse<List<Product>> findPaginatedProducts(int page, int size, String sortBy, String sortDirection) {
         Sort.Direction direction = Sort.Direction.fromOptionalString(sortDirection).orElse(Sort.Direction.ASC);
         Page<ProductEntity> productEntities = productRepository.findAll(
                 PageRequest.of(page, size, Sort.by(direction, sortBy)));
 
-        List<ProductDto> products = productEntities.getContent()
+        List<Product> products = productEntities.getContent()
                 .stream()
-                .map(product -> new ProductDto(product, true))
+                .map(product -> new Product(product, true))
                 .collect(Collectors.toList());
 
-        return PaginatedResponse.<List<ProductDto>>builder()
+        return PaginatedResponse.<List<Product>>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .data(products)
                 .detailPages(PaginatedResponse.PagingMetadata.builder()
@@ -81,38 +81,38 @@ public class ProductService {
                 .build();
     }
 
-    public RestResponse<ProductDto> findProduct(String barcode, String productName) {
-        ProductDto productDto;
+    public RestResponse<Product> findProduct(String barcode, String productName) {
+        Product product;
         if (barcode.isBlank() && productName.isBlank()) {
             log.warn("Invalid Parameter: barcode & productName is blank");
             throw new KooposException(ApplicationCode.INVALID_PARAMETER);
         } else if (!barcode.isBlank()) {
-            productDto = new ProductDto(productRepository.findByBarcode(barcode).orElseThrow(() ->
+            product = new Product(productRepository.findByBarcode(barcode).orElseThrow(() ->
                     new KooposException(ApplicationCode.BARCODE_NOT_FOUND)), true);
         } else {
-            productDto = new ProductDto(productRepository.findByProductName(productName).orElseThrow(() ->
+            product = new Product(productRepository.findByProductName(productName).orElseThrow(() ->
                     new KooposException(ApplicationCode.ITEM_NAME_NOT_FOUND)), true);
         }
 
-        return RestResponse.<ProductDto>builder()
+        return RestResponse.<Product>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(productDto)
+                .data(product)
                 .build();
     }
 
-    public RestResponse<ProductDto> updateProduct(String barcode, ProductDto productDto) {
+    public RestResponse<Product> updateProduct(String barcode, Product product) {
         ProductEntity existingInventory = productRepository.findByBarcode(barcode).orElseThrow(() ->
                 new KooposException(ApplicationCode.BARCODE_NOT_FOUND));
-        existingInventory.setProductName(productDto.getProductName());
-        existingInventory.setDescription(productDto.getDescription());
-        existingInventory.setQuantity(productDto.getQuantity());
-        existingInventory.setBuyingPrice(productDto.getBuyingPrice());
-        existingInventory.setSellingPrice(productDto.getSellingPrice());
+        existingInventory.setProductName(product.getProductName());
+        existingInventory.setDescription(product.getDescription());
+        existingInventory.setQuantity(product.getQuantity());
+        existingInventory.setBuyingPrice(product.getBuyingPrice());
+        existingInventory.setSellingPrice(product.getSellingPrice());
         existingInventory.setUpdatedDate(LocalDateTime.now());
         existingInventory.getCategories().clear();
-        if (null != productDto.getCategories()) {
+        if (null != product.getCategories()) {
             Set<CategoryEntity> categoryEntities = new HashSet<>();
-            for (String category : productDto.getCategories()) {
+            for (String category : product.getCategories()) {
                 CategoryEntity categoryEntity = new CategoryEntity(category);
                 categoryEntities.add(getCategoryEntityIfExists(categoryEntity));
             }
@@ -120,9 +120,9 @@ public class ProductService {
         }
 
         final ProductEntity updatedInventory = productRepository.save(existingInventory);
-        return RestResponse.<ProductDto>builder()
+        return RestResponse.<Product>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(new ProductDto(updatedInventory, true))
+                .data(new Product(updatedInventory, true))
                 .build();
     }
 

@@ -1,6 +1,6 @@
 package com.gerryron.koopos.grocerystoreservice.service;
 
-import com.gerryron.koopos.grocerystoreservice.shared.request.TransactionRequest;
+import com.gerryron.koopos.grocerystoreservice.shared.dto.Transaction;
 import com.gerryron.koopos.grocerystoreservice.repository.ProductRepository;
 import com.gerryron.koopos.grocerystoreservice.repository.TransactionDetailsRepository;
 import com.gerryron.koopos.grocerystoreservice.repository.TransactionRepository;
@@ -25,7 +25,7 @@ public class TransactionServiceTest {
 
     @Test
     void testCreateTransaction_Success() {
-        TransactionRequest transactionRequest = new TransactionRequest();
+        Transaction transaction = new Transaction();
 
     }
 }

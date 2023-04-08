@@ -1,4 +1,4 @@
-package com.gerryron.koopos.grocerystoreservice.shared.request;
+package com.gerryron.koopos.grocerystoreservice.shared.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ProductDto {
+public class Product {
     @NotNull
     private String barcode;
     @NotBlank
@@ -41,8 +41,8 @@ public class ProductDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Set<String> categories;
 
-    public ProductDto(String barcode, String productName, String description, Integer quantity,
-                      BigDecimal buyingPrice, BigDecimal sellingPrice, Set<String> categories) {
+    public Product(String barcode, String productName, String description, Integer quantity,
+                   BigDecimal buyingPrice, BigDecimal sellingPrice, Set<String> categories) {
         this.barcode = barcode;
         this.productName = productName;
         this.description = description;
@@ -52,7 +52,7 @@ public class ProductDto {
         this.categories = categories;
     }
 
-    public ProductDto(ProductEntity productEntity) {
+    public Product(ProductEntity productEntity) {
         this.barcode = productEntity.getBarcode();
         this.productName = productEntity.getProductName();
         this.description = productEntity.getDescription();
@@ -63,7 +63,7 @@ public class ProductDto {
         this.updatedDate = productEntity.getUpdatedDate();
     }
 
-    public ProductDto(ProductEntity productEntity, boolean withCategories) {
+    public Product(ProductEntity productEntity, boolean withCategories) {
         this(productEntity);
         if (withCategories && null != productEntity.getCategories()) {
             this.categories = productEntity.getCategories().stream()
