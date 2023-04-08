@@ -22,9 +22,4 @@ public class TransactionEntity {
     private BigDecimal profit;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-
-    @PrePersist
-    void preInsert() {
-        this.createdDate = LocalDateTime.now();
-    }
 }

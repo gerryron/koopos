@@ -17,14 +17,9 @@ public class TransactionDetailsEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String transactionNumber;
-    private Integer inventoryId;
+    private Integer productId;
     private Integer amount;
     private BigDecimal price;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
-
-    @PrePersist
-    void preInsert() {
-        this.createdDate = LocalDateTime.now();
-    }
 }

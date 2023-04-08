@@ -20,6 +20,11 @@ import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@SqlGroup({
+        @Sql("classpath:data/db/product.sql"),
+        @Sql("classpath:data/db/category.sql"),
+        @Sql("classpath:data/db/product_categories.sql")
+})
 public class CategoryControllerTest {
 
     @Autowired
@@ -32,11 +37,6 @@ public class CategoryControllerTest {
 
     @Test
     @Tag("getPaginatedCategories")
-    @SqlGroup({
-            @Sql("classpath:data/db/product.sql"),
-            @Sql("classpath:data/db/category.sql"),
-            @Sql("classpath:data/db/product_categories.sql")
-    })
     void shouldGetPaginatedCategoriesReturnOK() {
         given()
                 .when()
@@ -47,21 +47,17 @@ public class CategoryControllerTest {
                 .statusCode(HttpStatus.OK.value())
                 .body("responseStatus.responseCode", is(SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(SUCCESS.getMessage()))
-                .body("data", hasSize(2))
+                .body("data", hasSize(3))
                 .body("data[0].categoryName", is("Category A"))
                 .body("data[1].categoryName", is("Category B"))
+                .body("data[2].categoryName", is("Category C"))
                 .body("detailPages.page", is(1))
                 .body("detailPages.rowPerPage", is(10))
-                .body("detailPages.totalData", is(2));
+                .body("detailPages.totalData", is(3));
     }
 
     @Test
     @Tag("getCategory")
-    @SqlGroup({
-            @Sql("classpath:data/db/product.sql"),
-            @Sql("classpath:data/db/category.sql"),
-            @Sql("classpath:data/db/product_categories.sql")
-    })
     void shouldGetCategoryByIdReturnOK() {
         given()
                 .queryParam("id", "1")
@@ -76,16 +72,11 @@ public class CategoryControllerTest {
                 .body("data.id", is(1))
                 .body("data.categoryName", is("Category A"))
                 .body("data.products", hasSize(1))
-                .body("data.errorDetails", nullValue());
+                .body("errorDetails", nullValue());
     }
 
     @Test
     @Tag("getCategory")
-    @SqlGroup({
-            @Sql("classpath:data/db/product.sql"),
-            @Sql("classpath:data/db/category.sql"),
-            @Sql("classpath:data/db/product_categories.sql")
-    })
     void shouldGetCategoryByCategoryNameReturnOK() {
         given()
                 .queryParam("categoryName", "Category A")
@@ -100,12 +91,11 @@ public class CategoryControllerTest {
                 .body("data.id", is(1))
                 .body("data.categoryName", is("Category A"))
                 .body("data.products", hasSize(1))
-                .body("data.errorDetails", nullValue());
+                .body("errorDetails", nullValue());
     }
 
     @Test
     @Tag("updateCategory")
-    @Sql("classpath:data/db/category.sql")
     void shouldUpdateCategoryReturnOK() {
         given()
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -125,10 +115,9 @@ public class CategoryControllerTest {
 
     @Test
     @Tag("deleteCategory")
-    @Sql("classpath:data/db/category.sql")
     void shouldDeleteCategoryReturnOK() {
         given()
-                .pathParam("id", "1")
+                .pathParam("id", "3")
                 .when()
                 .delete("/api/categories/category/{id}")
                 .then()
@@ -138,7 +127,7 @@ public class CategoryControllerTest {
                 .body("responseStatus.responseCode", is(SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(SUCCESS.getMessage()))
                 .body("data", nullValue())
-                .body("detailsError", nullValue());
+                .body("errorDetails", nullValue());
     }
 
     @AfterEach

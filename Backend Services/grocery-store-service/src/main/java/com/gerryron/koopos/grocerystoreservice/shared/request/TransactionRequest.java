@@ -1,6 +1,5 @@
-package com.gerryron.koopos.grocerystoreservice.shared.dto;
+package com.gerryron.koopos.grocerystoreservice.shared.request;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,8 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class Transaction {
+public class TransactionRequest {
 
     @NotNull
     private String transactionNumber;
@@ -24,6 +22,7 @@ public class Transaction {
 
     @Getter
     @Setter
+    @NoArgsConstructor
     public static class ProductPurchased {
         @NotNull
         private Integer productId;

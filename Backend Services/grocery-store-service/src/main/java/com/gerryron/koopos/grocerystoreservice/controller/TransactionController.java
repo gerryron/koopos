@@ -1,7 +1,7 @@
 package com.gerryron.koopos.grocerystoreservice.controller;
 
 import com.gerryron.koopos.grocerystoreservice.shared.response.RestResponse;
-import com.gerryron.koopos.grocerystoreservice.shared.dto.Transaction;
+import com.gerryron.koopos.grocerystoreservice.shared.request.TransactionRequest;
 import com.gerryron.koopos.grocerystoreservice.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<RestResponse<Object>> createTransaction(
-            @RequestBody @Valid Transaction transaction) {
-        return ResponseEntity.ok(transactionService.createTransaction(transaction));
+            @RequestBody @Valid TransactionRequest transactionRequest) {
+        return ResponseEntity.ok(transactionService.createTransaction(transactionRequest));
     }
 }
