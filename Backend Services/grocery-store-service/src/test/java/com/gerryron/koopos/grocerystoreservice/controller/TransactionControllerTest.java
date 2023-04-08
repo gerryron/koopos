@@ -17,8 +17,7 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.port;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -63,6 +62,7 @@ class TransactionControllerTest {
     @Sql("classpath:data/db/transaction_details.sql")
     void shouldGetPaginatedTransaction_ReturnSuccess() {
         given()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .when()
                 .get("/api/transaction")
                 .then()
@@ -71,5 +71,41 @@ class TransactionControllerTest {
                 .statusCode(HttpStatus.OK.value())
                 .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
                 .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()));
+    }
+
+    @Test
+    @Sql("classpath:data/db/product.sql")
+    @Sql("classpath:data/db/transaction.sql")
+    @Sql("classpath:data/db/transaction_details.sql")
+    void shouldGetTransaction_ReturnSuccess() {
+        given()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .pathParam("transactionNumber", "transactionNumber01")
+                .log().all()
+                .when()
+                .get("/api/transaction/{transactionNumber}")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
+                .body("data.transactionNumber", is("transactionNumber01"))
+                .body("data.amount", is(2))
+                .body("data.totalPrice", is(15500.0F))
+                .body("data.profit", is(1000.00F))
+                .body("data.transactionDetails", hasSize(2))
+                .body("data.transactionDetails[0].id", is(1))
+                .body("data.transactionDetails[0].productName", is("Product A"))
+                .body("data.transactionDetails[0].amount", is(2))
+                .body("data.transactionDetails[0].price", is(3000.00F))
+                .body("data.transactionDetails[0].createdDate", notNullValue())
+                .body("data.transactionDetails[1].id", is(2))
+                .body("data.transactionDetails[1].productName", is("Product B"))
+                .body("data.transactionDetails[1].amount", is(1))
+                .body("data.transactionDetails[1].price", is(9500.00F))
+                .body("data.transactionDetails[1].createdDate", notNullValue())
+                .body("data.createdDate", notNullValue())
+                .body("errorDetails", nullValue());
     }
 }

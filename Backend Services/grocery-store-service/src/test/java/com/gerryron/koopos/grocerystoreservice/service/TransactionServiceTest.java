@@ -169,4 +169,66 @@ class TransactionServiceTest {
         assertEquals(transactionDetailsEntity.getCreatedDate(), response.getData().get(0).getTransactionDetails().get(0).getCreatedDate());
         assertNull(response.getErrorDetails());
     }
+
+    @Test
+    void testGetTransactionByTransactionNumber_Success() {
+        final Product product = new Product("AA21", "Product A", "Product A Description", 5,
+                new BigDecimal(2800), new BigDecimal(3000), Collections.emptySet());
+        final String transactionNumber = UUID.randomUUID().toString();
+        final TransactionDetailsEntity transactionDetailsEntity = TransactionDetailsEntity.builder()
+                .id(1)
+                .transactionNumber(transactionNumber)
+                .productId(1)
+                .amount(4)
+                .price(new BigDecimal(3000))
+                .createdDate(LocalDateTime.now())
+                .build();
+        final List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
+        final TransactionEntity transactionEntity = TransactionEntity.builder()
+                .id(1)
+                .transactionNumber(transactionNumber)
+                .amount(transactionDetailsEntities.size())
+                .totalPrice(transactionDetailsEntities.stream()
+                        .map(x -> x.getPrice()
+                                .multiply(new BigDecimal(x.getAmount())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .profit(transactionDetailsEntities.stream()
+                        .map(x -> x.getPrice().subtract(new BigDecimal(200))
+                                .multiply(new BigDecimal(x.getAmount())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        when(transactionRepository.findByTransactionNumber(anyString()))
+                .thenReturn(Optional.of(transactionEntity));
+        when(transactionDetailsRepository.findAllByTransactionNumber(anyString()))
+                .thenReturn(transactionDetailsEntities);
+        when(productRepository.findById(anyInt()))
+                .thenReturn(Optional.of(new ProductEntity(product)));
+        RestResponse<TransactionResponse> response = transactionService
+                .findTransactionByTransactionNumber(transactionNumber);
+
+        assertEquals(ApplicationCode.SUCCESS.getCode(), response.getResponseStatus().getResponseCode());
+        assertEquals(ApplicationCode.SUCCESS.getMessage(), response.getResponseStatus().getResponseMessage());
+        assertNotNull(response.getData());
+        assertEquals(transactionEntity.getTransactionNumber(), response.getData().getTransactionNumber());
+        assertEquals(transactionEntity.getAmount(), response.getData().getAmount());
+        assertEquals(transactionEntity.getTotalPrice(), response.getData().getTotalPrice());
+        assertEquals(transactionEntity.getProfit(), response.getData().getProfit());
+        assertEquals(transactionEntity.getCreatedDate(), response.getData().getCreatedDate());
+        assertEquals(transactionDetailsEntity.getId(), response.getData().getTransactionDetails().get(0).getId());
+        assertEquals(product.getProductName(), response.getData().getTransactionDetails().get(0).getProductName());
+        assertEquals(transactionDetailsEntity.getAmount(), response.getData().getTransactionDetails().get(0).getAmount());
+        assertEquals(transactionDetailsEntity.getPrice(), response.getData().getTransactionDetails().get(0).getPrice());
+        assertEquals(transactionDetailsEntity.getCreatedDate(), response.getData().getTransactionDetails().get(0).getCreatedDate());
+        assertNull(response.getErrorDetails());
+    }
+
+    @Test
+    void testGetTransactionByTransactionNumber_TransactionNotFound() {
+        KooposException kooposException = assertThrows(KooposException.class, () -> transactionService
+                .findTransactionByTransactionNumber(UUID.randomUUID().toString()));
+        assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getCode(), kooposException.getCode());
+        assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getMessage(), kooposException.getMessage());
+    }
 }

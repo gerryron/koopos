@@ -27,7 +27,7 @@ public class TransactionController {
     }
 
     @GetMapping
-    public ResponseEntity<RestResponse<List<TransactionResponse>>> getPaginatedTransaction(
+    public ResponseEntity<RestResponse<List<TransactionResponse>>> getPaginatedTransactions(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
@@ -37,5 +37,12 @@ public class TransactionController {
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by(direction, sortBy));
 
         return ResponseEntity.ok(transactionService.findPaginatedTransaction(pageRequest));
+    }
+
+    @GetMapping("/{transactionNumber}")
+    public ResponseEntity<RestResponse<TransactionResponse>> getTransaction(
+            @PathVariable(value = "transactionNumber") String transactionNumber
+    ) {
+        return ResponseEntity.ok(transactionService.findTransactionByTransactionNumber(transactionNumber));
     }
 }

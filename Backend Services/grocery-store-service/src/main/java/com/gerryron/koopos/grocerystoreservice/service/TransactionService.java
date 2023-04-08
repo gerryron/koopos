@@ -83,22 +83,22 @@ public class TransactionService {
         List<TransactionResponse> transactionResponses = transactionEntities.getContent()
                 .stream()
                 .map(transactionEntity -> {
-                    List<TransactionDetailsEntity> transactionDetails = transactionDetailsRepository
+                    List<TransactionDetailsEntity> transactionDetailEntities = transactionDetailsRepository
                             .findAllByTransactionNumber(transactionEntity.getTransactionNumber());
 
-                    List<TransactionResponse.TransactionDetail> transactionDetailResponse = transactionDetails
+                    List<TransactionResponse.TransactionDetail> transactionDetailResponse = transactionDetailEntities
                             .stream()
-                            .map(transactionDetail -> {
+                            .map(transactionDetailsEntity -> {
                                 ProductEntity productEntity = productRepository
-                                        .findById(transactionDetail.getProductId())
+                                        .findById(transactionDetailsEntity.getProductId())
                                         .orElseThrow(() -> new KooposException(ApplicationCode.PRODUCT_NOT_FOUND));
 
                                 return TransactionResponse.TransactionDetail.builder()
-                                        .id(transactionDetail.getId())
+                                        .id(transactionDetailsEntity.getId())
                                         .productName(productEntity.getProductName())
-                                        .amount(transactionDetail.getAmount())
-                                        .price(transactionDetail.getPrice())
-                                        .createdDate(transactionDetail.getCreatedDate())
+                                        .amount(transactionDetailsEntity.getAmount())
+                                        .price(transactionDetailsEntity.getPrice())
+                                        .createdDate(transactionDetailsEntity.getCreatedDate())
                                         .build();
                             })
                             .collect(Collectors.toList());
@@ -117,6 +117,40 @@ public class TransactionService {
         return RestResponse.<List<TransactionResponse>>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .data(transactionResponses)
+                .build();
+    }
+
+    public RestResponse<TransactionResponse> findTransactionByTransactionNumber(String transactionNumber) {
+        TransactionEntity transactionEntity = transactionRepository.findByTransactionNumber(transactionNumber)
+                .orElseThrow(() -> new KooposException(ApplicationCode.TRANSACTION_NOT_FOUND));
+        List<TransactionResponse.TransactionDetail> transactionDetailResponse = transactionDetailsRepository
+                .findAllByTransactionNumber(transactionNumber)
+                .stream()
+                .map(transactionDetailsEntity -> {
+                    ProductEntity productEntity = productRepository
+                            .findById(transactionDetailsEntity.getProductId())
+                            .orElseThrow(() -> new KooposException(ApplicationCode.PRODUCT_NOT_FOUND));
+
+                    return TransactionResponse.TransactionDetail.builder()
+                            .id(transactionDetailsEntity.getId())
+                            .productName(productEntity.getProductName())
+                            .amount(transactionDetailsEntity.getAmount())
+                            .price(transactionDetailsEntity.getPrice())
+                            .createdDate(transactionDetailsEntity.getCreatedDate())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return RestResponse.<TransactionResponse>builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .data(TransactionResponse.builder()
+                        .transactionNumber(transactionEntity.getTransactionNumber())
+                        .amount(transactionEntity.getAmount())
+                        .totalPrice(transactionEntity.getTotalPrice())
+                        .profit(transactionEntity.getProfit())
+                        .transactionDetails(transactionDetailResponse)
+                        .createdDate(transactionEntity.getCreatedDate())
+                        .build())
                 .build();
     }
 }
