@@ -33,8 +33,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
@@ -49,6 +48,8 @@ class TransactionServiceTest {
     @InjectMocks
     private TransactionService transactionService;
 
+    @Captor
+    private ArgumentCaptor<ProductEntity> productEntityArgumentCaptor;
     @Captor
     private ArgumentCaptor<TransactionEntity> transactionEntityArgumentCaptor;
     @Captor
@@ -68,10 +69,13 @@ class TransactionServiceTest {
         when(productRepository.findById(anyInt())).thenReturn(Optional.of(new ProductEntity(product)));
         RestResponse<Object> transactionResponse = transactionService.createTransaction(transactionRequest);
 
+        verify(productRepository).save(productEntityArgumentCaptor.capture());
         verify(transactionDetailsRepository).saveAll(transactionDetailEntitiesArgumentCaptor.capture());
         verify(transactionRepository).save(transactionEntityArgumentCaptor.capture());
+        ProductEntity productEntity = productEntityArgumentCaptor.getValue();
         List<TransactionDetailsEntity> transactionDetailsEntities = transactionDetailEntitiesArgumentCaptor.getValue();
         TransactionEntity transactionEntity = transactionEntityArgumentCaptor.getValue();
+        assertEquals(product.getQuantity() - productPurchased.getAmount(), productEntity.getQuantity());
         assertEquals(transactionRequest.getTransactionNumber(), transactionEntity.getTransactionNumber());
         assertEquals(transactionRequest.getProductsPurchased().size(), transactionEntity.getAmount());
         assertEquals(transactionRequest.getProductsPurchased().stream()
@@ -112,6 +116,25 @@ class TransactionServiceTest {
                 () -> transactionService.createTransaction(transactionRequest));
         assertEquals(ApplicationCode.PRODUCT_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(ApplicationCode.PRODUCT_NOT_FOUND.getMessage(), kooposException.getMessage());
+    }
+
+    @Test
+    void testCreateTransaction_ProductNotEnough() {
+        Product product = new Product("AA21", "Product A", "Product A Description", 5,
+                new BigDecimal(2800), new BigDecimal(3000), Collections.emptySet());
+        TransactionRequest.ProductPurchased productPurchased = new TransactionRequest.ProductPurchased();
+        productPurchased.setProductId(1);
+        productPurchased.setAmount(10);
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setTransactionNumber(UUID.randomUUID().toString());
+        transactionRequest.setProductsPurchased(Collections.singletonList(productPurchased));
+
+        KooposException kooposException = assertThrows(KooposException.class, () -> {
+            when(productRepository.findById(1)).thenReturn(Optional.of(new ProductEntity(product)));
+            transactionService.createTransaction(transactionRequest);
+        });
+        assertEquals(ApplicationCode.PRODUCT_NOT_ENOUGH.getCode(), kooposException.getCode());
+        assertEquals(ApplicationCode.PRODUCT_NOT_ENOUGH.getMessage(), kooposException.getMessage());
     }
 
     @Test

@@ -51,6 +51,9 @@ public class TransactionService {
         for (TransactionRequest.ProductPurchased productPurchased : transactionRequest.getProductsPurchased()) {
             ProductEntity product = productRepository.findById(productPurchased.getProductId()).orElseThrow(() ->
                     new KooposException(ApplicationCode.PRODUCT_NOT_FOUND));
+            if (product.getQuantity() < productPurchased.getAmount()) {
+                throw new KooposException(ApplicationCode.PRODUCT_NOT_ENOUGH);
+            }
 
             totalPrice = totalPrice.add(product.getSellingPrice()
                     .multiply(new BigDecimal(productPurchased.getAmount())));
@@ -63,6 +66,9 @@ public class TransactionService {
                     .price(product.getSellingPrice())
                     .createdDate(LocalDateTime.now())
                     .build());
+
+            product.setQuantity(product.getQuantity() - productPurchased.getAmount());
+            productRepository.save(product);
         }
 
         transactionDetailsRepository.saveAll(transactionDetailsEntities);
