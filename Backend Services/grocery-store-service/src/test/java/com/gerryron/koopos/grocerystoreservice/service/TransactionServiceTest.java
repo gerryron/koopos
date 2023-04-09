@@ -28,26 +28,25 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
 
+    private static final String TRANSACTION_NUMBER = "TransactionNumber01";
     @Mock
     private ProductRepository productRepository;
     @Mock
     private TransactionRepository transactionRepository;
     @Mock
     private TransactionDetailsRepository transactionDetailsRepository;
-
     @InjectMocks
     private TransactionService transactionService;
-
     @Captor
     private ArgumentCaptor<ProductEntity> productEntityArgumentCaptor;
     @Captor
@@ -55,48 +54,72 @@ class TransactionServiceTest {
     @Captor
     private ArgumentCaptor<List<TransactionDetailsEntity>> transactionDetailEntitiesArgumentCaptor;
 
-    @Test
-    void testCreateTransaction_Success() {
+    private ProductEntity createSimpleProductEntity() {
         Product product = new Product("AA21", "Product A", "Product A Description", 5,
                 new BigDecimal(2800), new BigDecimal(3000), Collections.emptySet());
+        return new ProductEntity(product);
+    }
+
+    private TransactionRequest createSimpleTransactionRequest() {
         TransactionRequest.ProductPurchased productPurchased = new TransactionRequest.ProductPurchased();
         productPurchased.setProductId(1);
         productPurchased.setAmount(4);
         TransactionRequest transactionRequest = new TransactionRequest();
-        transactionRequest.setTransactionNumber(UUID.randomUUID().toString());
+        transactionRequest.setTransactionNumber(TRANSACTION_NUMBER);
         transactionRequest.setProductsPurchased(Collections.singletonList(productPurchased));
+        return transactionRequest;
+    }
 
-        when(productRepository.findById(anyInt())).thenReturn(Optional.of(new ProductEntity(product)));
+    private TransactionDetailsEntity createSimpleTransactionDetailsEntity() {
+        return TransactionDetailsEntity.builder()
+                .id(1)
+                .transactionNumber(TRANSACTION_NUMBER)
+                .productId(1)
+                .amount(4)
+                .price(new BigDecimal(3000))
+                .createdDate(LocalDateTime.now())
+                .build();
+    }
+
+    private TransactionEntity createSimpleTransactionEntity() {
+        return TransactionEntity.builder()
+                .id(1)
+                .transactionNumber(TRANSACTION_NUMBER)
+                .amount(1)
+                .totalPrice(new BigDecimal(12000))
+                .profit(new BigDecimal(800))
+                .createdDate(LocalDateTime.now())
+                .build();
+    }
+
+    @Test
+    void testCreateTransaction_Success() {
+        ProductEntity productEntity = createSimpleProductEntity();
+        TransactionRequest transactionRequest = createSimpleTransactionRequest();
+
+        when(productRepository.findById(anyInt())).thenReturn(Optional.of(productEntity));
         RestResponse<Object> transactionResponse = transactionService.createTransaction(transactionRequest);
 
         verify(productRepository).save(productEntityArgumentCaptor.capture());
         verify(transactionDetailsRepository).saveAll(transactionDetailEntitiesArgumentCaptor.capture());
         verify(transactionRepository).save(transactionEntityArgumentCaptor.capture());
-        ProductEntity productEntity = productEntityArgumentCaptor.getValue();
-        List<TransactionDetailsEntity> transactionDetailsEntities = transactionDetailEntitiesArgumentCaptor.getValue();
-        TransactionEntity transactionEntity = transactionEntityArgumentCaptor.getValue();
-        assertEquals(product.getQuantity() - productPurchased.getAmount(), productEntity.getQuantity());
-        assertEquals(transactionRequest.getTransactionNumber(), transactionEntity.getTransactionNumber());
-        assertEquals(transactionRequest.getProductsPurchased().size(), transactionEntity.getAmount());
-        assertEquals(transactionRequest.getProductsPurchased().stream()
-                        .map(x -> product.getSellingPrice()
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add),
-                transactionEntity.getTotalPrice());
-        assertEquals(transactionRequest.getProductsPurchased().stream()
-                        .map(x -> product.getSellingPrice().subtract(product.getBuyingPrice())
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add),
-                transactionEntity.getProfit());
-        assertNotNull(transactionEntity.getCreatedDate());
-        assertNull(transactionEntity.getUpdatedDate());
-        assertEquals(transactionRequest.getTransactionNumber(), transactionDetailsEntities.get(0).getTransactionNumber());
+        ProductEntity productEntityArgumentCaptorValue = productEntityArgumentCaptor.getValue();
+        List<TransactionDetailsEntity> tdEntitiesArgumentCaptorValue = transactionDetailEntitiesArgumentCaptor.getValue();
+        TransactionEntity transactionEntityArgumentCaptorValue = transactionEntityArgumentCaptor.getValue();
+        assertEquals(1, productEntityArgumentCaptorValue.getQuantity());
+        assertEquals(TRANSACTION_NUMBER, transactionEntityArgumentCaptorValue.getTransactionNumber());
+        assertEquals(1, transactionEntityArgumentCaptorValue.getAmount());
+        assertEquals(new BigDecimal(12000), transactionEntityArgumentCaptorValue.getTotalPrice());
+        assertEquals(new BigDecimal(800), transactionEntityArgumentCaptorValue.getProfit());
+        assertNotNull(transactionEntityArgumentCaptorValue.getCreatedDate());
+        assertNull(transactionEntityArgumentCaptorValue.getUpdatedDate());
+        assertEquals(TRANSACTION_NUMBER, tdEntitiesArgumentCaptorValue.get(0).getTransactionNumber());
 //        assertEquals(1, transactionDetailsEntities.get(0).getProductId());
-        assertNull(transactionDetailsEntities.get(0).getProductId());
-        assertEquals(transactionRequest.getProductsPurchased().get(0).getAmount(), transactionDetailsEntities.get(0).getAmount());
-        assertEquals(product.getSellingPrice(), transactionDetailsEntities.get(0).getPrice());
-        assertNotNull(transactionDetailsEntities.get(0).getCreatedDate());
-        assertNull(transactionDetailsEntities.get(0).getUpdatedDate());
+        assertNull(tdEntitiesArgumentCaptorValue.get(0).getProductId());
+        assertEquals(4, tdEntitiesArgumentCaptorValue.get(0).getAmount());
+        assertEquals(new BigDecimal(3000), tdEntitiesArgumentCaptorValue.get(0).getPrice());
+        assertNotNull(tdEntitiesArgumentCaptorValue.get(0).getCreatedDate());
+        assertNull(tdEntitiesArgumentCaptorValue.get(0).getUpdatedDate());
         assertEquals(ApplicationCode.SUCCESS.getCode(), transactionResponse.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), transactionResponse.getResponseStatus().getResponseMessage());
         assertNull(transactionResponse.getData());
@@ -105,12 +128,7 @@ class TransactionServiceTest {
 
     @Test
     void testCreateTransaction_ProductNotFound() {
-        TransactionRequest.ProductPurchased productPurchased = new TransactionRequest.ProductPurchased();
-        productPurchased.setProductId(1);
-        productPurchased.setAmount(4);
-        TransactionRequest transactionRequest = new TransactionRequest();
-        transactionRequest.setTransactionNumber(UUID.randomUUID().toString());
-        transactionRequest.setProductsPurchased(Collections.singletonList(productPurchased));
+        TransactionRequest transactionRequest = createSimpleTransactionRequest();
 
         KooposException kooposException = assertThrows(KooposException.class,
                 () -> transactionService.createTransaction(transactionRequest));
@@ -120,60 +138,30 @@ class TransactionServiceTest {
 
     @Test
     void testCreateTransaction_ProductNotEnough() {
-        Product product = new Product("AA21", "Product A", "Product A Description", 5,
-                new BigDecimal(2800), new BigDecimal(3000), Collections.emptySet());
-        TransactionRequest.ProductPurchased productPurchased = new TransactionRequest.ProductPurchased();
-        productPurchased.setProductId(1);
-        productPurchased.setAmount(10);
-        TransactionRequest transactionRequest = new TransactionRequest();
-        transactionRequest.setTransactionNumber(UUID.randomUUID().toString());
-        transactionRequest.setProductsPurchased(Collections.singletonList(productPurchased));
+        ProductEntity productEntity = createSimpleProductEntity();
+        productEntity.setQuantity(0);
+        TransactionRequest transactionRequest = createSimpleTransactionRequest();
 
-        KooposException kooposException = assertThrows(KooposException.class, () -> {
-            when(productRepository.findById(1)).thenReturn(Optional.of(new ProductEntity(product)));
-            transactionService.createTransaction(transactionRequest);
-        });
+        when(productRepository.findById(anyInt())).thenReturn(Optional.of(productEntity));
+
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> transactionService.createTransaction(transactionRequest));
         assertEquals(ApplicationCode.PRODUCT_NOT_ENOUGH.getCode(), kooposException.getCode());
         assertEquals(ApplicationCode.PRODUCT_NOT_ENOUGH.getMessage(), kooposException.getMessage());
     }
 
     @Test
     void testFindPaginatedTransaction_Success() {
-        final Product product = new Product("AA21", "Product A", "Product A Description", 5,
-                new BigDecimal(2800), new BigDecimal(3000), Collections.emptySet());
-        final PageRequest pageRequest = PageRequest.of(1, 10);
-        final String transactionNumber = UUID.randomUUID().toString();
-        final TransactionDetailsEntity transactionDetailsEntity = TransactionDetailsEntity.builder()
-                .id(1)
-                .transactionNumber(transactionNumber)
-                .productId(1)
-                .amount(4)
-                .price(new BigDecimal(3000))
-                .createdDate(LocalDateTime.now())
-                .build();
-        final List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
-        final TransactionEntity transactionEntity = TransactionEntity.builder()
-                .id(1)
-                .transactionNumber(transactionNumber)
-                .amount(transactionDetailsEntities.size())
-                .totalPrice(transactionDetailsEntities.stream()
-                        .map(x -> x.getPrice()
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .profit(transactionDetailsEntities.stream()
-                        .map(x -> x.getPrice().subtract(new BigDecimal(200))
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .createdDate(LocalDateTime.now())
-                .build();
-        final List<TransactionEntity> transactionEntities = Collections.singletonList(transactionEntity);
+        ProductEntity productEntity = createSimpleProductEntity();
+        PageRequest pageRequest = PageRequest.of(1, 10);
+        TransactionEntity transactionEntity = createSimpleTransactionEntity();
+        TransactionDetailsEntity transactionDetailsEntity = createSimpleTransactionDetailsEntity();
+        List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
+        List<TransactionEntity> transactionEntities = Collections.singletonList(transactionEntity);
 
-        when(transactionRepository.findAll(pageRequest))
-                .thenReturn(new PageImpl<>(transactionEntities));
-        when(transactionDetailsRepository.findAllByTransactionNumber(anyString()))
-                .thenReturn(transactionDetailsEntities);
-        when(productRepository.findById(anyInt()))
-                .thenReturn(Optional.of(new ProductEntity(product)));
+        when(transactionRepository.findAll(pageRequest)).thenReturn(new PageImpl<>(transactionEntities));
+        when(transactionDetailsRepository.findAllByTransactionNumber(anyString())).thenReturn(transactionDetailsEntities);
+        when(productRepository.findById(anyInt())).thenReturn(Optional.of(productEntity));
         PaginatedResponse<List<TransactionResponse>> response = transactionService
                 .findPaginatedTransaction(pageRequest);
 
@@ -181,124 +169,79 @@ class TransactionServiceTest {
         assertEquals(ApplicationCode.SUCCESS.getMessage(), response.getResponseStatus().getResponseMessage());
         assertNotNull(response.getData());
         assertEquals(transactionEntities.size(), response.getData().size());
-        assertEquals(transactionEntity.getTransactionNumber(), response.getData().get(0).getTransactionNumber());
-        assertEquals(transactionEntity.getAmount(), response.getData().get(0).getAmount());
-        assertEquals(transactionEntity.getTotalPrice(), response.getData().get(0).getTotalPrice());
-        assertEquals(transactionEntity.getProfit(), response.getData().get(0).getProfit());
-        assertEquals(transactionEntity.getCreatedDate(), response.getData().get(0).getCreatedDate());
-        assertEquals(transactionDetailsEntity.getId(), response.getData().get(0).getTransactionDetails().get(0).getId());
-        assertEquals(product.getProductName(), response.getData().get(0).getTransactionDetails().get(0).getProductName());
-        assertEquals(transactionDetailsEntity.getAmount(), response.getData().get(0).getTransactionDetails().get(0).getAmount());
-        assertEquals(transactionDetailsEntity.getPrice(), response.getData().get(0).getTransactionDetails().get(0).getPrice());
-        assertEquals(transactionDetailsEntity.getCreatedDate(), response.getData().get(0).getTransactionDetails().get(0).getCreatedDate());
+        TransactionResponse responseData = response.getData().get(0);
+        TransactionResponse.TransactionDetail responseDataDetail = responseData.getTransactionDetails().get(0);
+        assertEquals(transactionEntity.getTransactionNumber(), responseData.getTransactionNumber());
+        assertEquals(transactionEntity.getAmount(), responseData.getAmount());
+        assertEquals(transactionEntity.getTotalPrice(), responseData.getTotalPrice());
+        assertEquals(transactionEntity.getProfit(), responseData.getProfit());
+        assertEquals(transactionEntity.getCreatedDate(), responseData.getCreatedDate());
+        assertEquals(transactionDetailsEntity.getId(), responseDataDetail.getId());
+        assertEquals(productEntity.getProductName(), responseDataDetail.getProductName());
+        assertEquals(transactionDetailsEntity.getAmount(), responseDataDetail.getAmount());
+        assertEquals(transactionDetailsEntity.getPrice(), responseDataDetail.getPrice());
+        assertEquals(transactionDetailsEntity.getCreatedDate(), responseDataDetail.getCreatedDate());
         assertEquals(1, response.getDetailPages().getPage());
         assertEquals(10, response.getDetailPages().getRowPerPage());
-        assertEquals(transactionEntities.size(), response.getDetailPages().getTotalData());
+        assertEquals(1, response.getDetailPages().getTotalData());
     }
 
     @Test
     void testGetTransactionByTransactionNumber_Success() {
-        final Product product = new Product("AA21", "Product A", "Product A Description", 5,
-                new BigDecimal(2800), new BigDecimal(3000), Collections.emptySet());
-        final String transactionNumber = UUID.randomUUID().toString();
-        final TransactionDetailsEntity transactionDetailsEntity = TransactionDetailsEntity.builder()
-                .id(1)
-                .transactionNumber(transactionNumber)
-                .productId(1)
-                .amount(4)
-                .price(new BigDecimal(3000))
-                .createdDate(LocalDateTime.now())
-                .build();
-        final List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
-        final TransactionEntity transactionEntity = TransactionEntity.builder()
-                .id(1)
-                .transactionNumber(transactionNumber)
-                .amount(transactionDetailsEntities.size())
-                .totalPrice(transactionDetailsEntities.stream()
-                        .map(x -> x.getPrice()
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .profit(transactionDetailsEntities.stream()
-                        .map(x -> x.getPrice().subtract(new BigDecimal(200))
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .createdDate(LocalDateTime.now())
-                .build();
+        ProductEntity productEntity = createSimpleProductEntity();
+        TransactionEntity transactionEntity = createSimpleTransactionEntity();
+        TransactionDetailsEntity transactionDetailsEntity = createSimpleTransactionDetailsEntity();
+        List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
 
-        when(transactionRepository.findByTransactionNumber(anyString()))
-                .thenReturn(Optional.of(transactionEntity));
-        when(transactionDetailsRepository.findAllByTransactionNumber(anyString()))
-                .thenReturn(transactionDetailsEntities);
-        when(productRepository.findById(anyInt()))
-                .thenReturn(Optional.of(new ProductEntity(product)));
+        when(transactionRepository.findByTransactionNumber(anyString())).thenReturn(Optional.of(transactionEntity));
+        when(transactionDetailsRepository.findAllByTransactionNumber(anyString())).thenReturn(transactionDetailsEntities);
+        when(productRepository.findById(anyInt())).thenReturn(Optional.of(productEntity));
         RestResponse<TransactionResponse> response = transactionService
-                .findTransactionByTransactionNumber(transactionNumber);
+                .findTransactionByTransactionNumber(TRANSACTION_NUMBER);
 
         assertEquals(ApplicationCode.SUCCESS.getCode(), response.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), response.getResponseStatus().getResponseMessage());
-        assertNotNull(response.getData());
-        assertEquals(transactionEntity.getTransactionNumber(), response.getData().getTransactionNumber());
-        assertEquals(transactionEntity.getAmount(), response.getData().getAmount());
-        assertEquals(transactionEntity.getTotalPrice(), response.getData().getTotalPrice());
-        assertEquals(transactionEntity.getProfit(), response.getData().getProfit());
-        assertEquals(transactionEntity.getCreatedDate(), response.getData().getCreatedDate());
-        assertEquals(transactionDetailsEntity.getId(), response.getData().getTransactionDetails().get(0).getId());
-        assertEquals(product.getProductName(), response.getData().getTransactionDetails().get(0).getProductName());
-        assertEquals(transactionDetailsEntity.getAmount(), response.getData().getTransactionDetails().get(0).getAmount());
-        assertEquals(transactionDetailsEntity.getPrice(), response.getData().getTransactionDetails().get(0).getPrice());
-        assertEquals(transactionDetailsEntity.getCreatedDate(), response.getData().getTransactionDetails().get(0).getCreatedDate());
+        TransactionResponse responseData = response.getData();
+        TransactionResponse.TransactionDetail responseDataDetail = responseData.getTransactionDetails().get(0);
+        assertNotNull(responseData);
+        assertEquals(transactionEntity.getTransactionNumber(), responseData.getTransactionNumber());
+        assertEquals(transactionEntity.getAmount(), responseData.getAmount());
+        assertEquals(transactionEntity.getTotalPrice(), responseData.getTotalPrice());
+        assertEquals(transactionEntity.getProfit(), responseData.getProfit());
+        assertEquals(transactionEntity.getCreatedDate(), responseData.getCreatedDate());
+        assertEquals(transactionDetailsEntity.getId(), responseDataDetail.getId());
+        assertEquals(productEntity.getProductName(), responseDataDetail.getProductName());
+        assertEquals(transactionDetailsEntity.getAmount(), responseDataDetail.getAmount());
+        assertEquals(transactionDetailsEntity.getPrice(), responseDataDetail.getPrice());
+        assertEquals(transactionDetailsEntity.getCreatedDate(), responseDataDetail.getCreatedDate());
         assertNull(response.getErrorDetails());
     }
 
     @Test
     void testGetTransactionByTransactionNumber_TransactionNotFound() {
-        KooposException kooposException = assertThrows(KooposException.class, () -> transactionService
-                .findTransactionByTransactionNumber(UUID.randomUUID().toString()));
+        when(transactionRepository.findByTransactionNumber(TRANSACTION_NUMBER)).thenReturn(Optional.empty());
+
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> transactionService.findTransactionByTransactionNumber(TRANSACTION_NUMBER));
         assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getMessage(), kooposException.getMessage());
     }
 
     @Test
     void testDeleteTransaction_Success() {
-        final Product product = new Product("AA21", "Product A", "Product A Description", 5,
-                new BigDecimal(2800), new BigDecimal(3000), Collections.emptySet());
-        final String transactionNumber = UUID.randomUUID().toString();
-        final TransactionDetailsEntity transactionDetailsEntity = TransactionDetailsEntity.builder()
-                .id(1)
-                .transactionNumber(transactionNumber)
-                .productId(1)
-                .amount(4)
-                .price(new BigDecimal(3000))
-                .createdDate(LocalDateTime.now())
-                .build();
-        final List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
-        final TransactionEntity transactionEntity = TransactionEntity.builder()
-                .id(1)
-                .transactionNumber(transactionNumber)
-                .amount(transactionDetailsEntities.size())
-                .totalPrice(transactionDetailsEntities.stream()
-                        .map(x -> x.getPrice()
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .profit(transactionDetailsEntities.stream()
-                        .map(x -> x.getPrice().subtract(new BigDecimal(200))
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .createdDate(LocalDateTime.now())
-                .build();
+        ProductEntity productEntity = createSimpleProductEntity();
+        TransactionEntity transactionEntity = createSimpleTransactionEntity();
+        TransactionDetailsEntity transactionDetailsEntity = createSimpleTransactionDetailsEntity();
+        List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
 
-        when(transactionRepository.findByTransactionNumber(anyString()))
-                .thenReturn(Optional.of(transactionEntity));
-        when(transactionDetailsRepository.findAllByTransactionNumber(anyString()))
-                .thenReturn(transactionDetailsEntities);
-        when(productRepository.findById(anyInt()))
-                .thenReturn(Optional.of(new ProductEntity(product)));
-        RestResponse<Object> response = transactionService
-                .deleteTransaction(transactionNumber);
+        when(transactionRepository.findByTransactionNumber(TRANSACTION_NUMBER)).thenReturn(Optional.of(transactionEntity));
+        when(transactionDetailsRepository.findAllByTransactionNumber(TRANSACTION_NUMBER)).thenReturn(transactionDetailsEntities);
+        when(productRepository.findById(anyInt())).thenReturn(Optional.of(productEntity));
+        RestResponse<Object> response = transactionService.deleteTransaction(TRANSACTION_NUMBER);
 
         verify(productRepository).save(productEntityArgumentCaptor.capture());
-        ProductEntity productEntity = productEntityArgumentCaptor.getValue();
-        assertEquals(product.getQuantity() + transactionDetailsEntity.getAmount(), productEntity.getQuantity());
+        ProductEntity productEntityArgumentCaptorValue = productEntityArgumentCaptor.getValue();
+        assertEquals(9, productEntityArgumentCaptorValue.getQuantity());
         assertEquals(ApplicationCode.SUCCESS.getCode(), response.getResponseStatus().getResponseCode());
         assertEquals(ApplicationCode.SUCCESS.getMessage(), response.getResponseStatus().getResponseMessage());
         assertNull(response.getData());
@@ -307,51 +250,26 @@ class TransactionServiceTest {
 
     @Test
     void testDeleteTransaction_TransactionNotFound() {
-        final String transactionNumber = UUID.randomUUID().toString();
-
-        when(transactionRepository.findByTransactionNumber(transactionNumber)).thenReturn(Optional.empty());
+        when(transactionRepository.findByTransactionNumber(TRANSACTION_NUMBER)).thenReturn(Optional.empty());
 
         KooposException kooposException = assertThrows(KooposException.class,
-                () -> transactionService.deleteTransaction(transactionNumber));
+                () -> transactionService.deleteTransaction(TRANSACTION_NUMBER));
         assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getMessage(), kooposException.getMessage());
     }
 
     @Test
     void testDeleteTransaction_ProductNotFound() {
-        final String transactionNumber = UUID.randomUUID().toString();
-        final TransactionDetailsEntity transactionDetailsEntity = TransactionDetailsEntity.builder()
-                .id(1)
-                .transactionNumber(transactionNumber)
-                .productId(1)
-                .amount(4)
-                .price(new BigDecimal(3000))
-                .createdDate(LocalDateTime.now())
-                .build();
-        final List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
-        final TransactionEntity transactionEntity = TransactionEntity.builder()
-                .id(1)
-                .transactionNumber(transactionNumber)
-                .amount(transactionDetailsEntities.size())
-                .totalPrice(transactionDetailsEntities.stream()
-                        .map(x -> x.getPrice()
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .profit(transactionDetailsEntities.stream()
-                        .map(x -> x.getPrice().subtract(new BigDecimal(200))
-                                .multiply(new BigDecimal(x.getAmount())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add))
-                .createdDate(LocalDateTime.now())
-                .build();
+        TransactionEntity transactionEntity = createSimpleTransactionEntity();
+        TransactionDetailsEntity transactionDetailsEntity = createSimpleTransactionDetailsEntity();
+        List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
 
-        when(transactionRepository.findByTransactionNumber(anyString()))
-                .thenReturn(Optional.of(transactionEntity));
-        when(transactionDetailsRepository.findAllByTransactionNumber(anyString()))
-                .thenReturn(transactionDetailsEntities);
+        when(transactionRepository.findByTransactionNumber(TRANSACTION_NUMBER)).thenReturn(Optional.of(transactionEntity));
+        when(transactionDetailsRepository.findAllByTransactionNumber(TRANSACTION_NUMBER)).thenReturn(transactionDetailsEntities);
         when(productRepository.findById(anyInt())).thenReturn(Optional.empty());
 
         KooposException kooposException = assertThrows(KooposException.class,
-                () -> transactionService.deleteTransaction(transactionNumber));
+                () -> transactionService.deleteTransaction(TRANSACTION_NUMBER));
         assertEquals(ApplicationCode.PRODUCT_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(ApplicationCode.PRODUCT_NOT_FOUND.getMessage(), kooposException.getMessage());
     }
