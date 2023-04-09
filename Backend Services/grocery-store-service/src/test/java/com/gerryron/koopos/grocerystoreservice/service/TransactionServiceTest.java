@@ -257,4 +257,102 @@ class TransactionServiceTest {
         assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getCode(), kooposException.getCode());
         assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getMessage(), kooposException.getMessage());
     }
+
+    @Test
+    void testDeleteTransaction_Success() {
+        final Product product = new Product("AA21", "Product A", "Product A Description", 5,
+                new BigDecimal(2800), new BigDecimal(3000), Collections.emptySet());
+        final String transactionNumber = UUID.randomUUID().toString();
+        final TransactionDetailsEntity transactionDetailsEntity = TransactionDetailsEntity.builder()
+                .id(1)
+                .transactionNumber(transactionNumber)
+                .productId(1)
+                .amount(4)
+                .price(new BigDecimal(3000))
+                .createdDate(LocalDateTime.now())
+                .build();
+        final List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
+        final TransactionEntity transactionEntity = TransactionEntity.builder()
+                .id(1)
+                .transactionNumber(transactionNumber)
+                .amount(transactionDetailsEntities.size())
+                .totalPrice(transactionDetailsEntities.stream()
+                        .map(x -> x.getPrice()
+                                .multiply(new BigDecimal(x.getAmount())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .profit(transactionDetailsEntities.stream()
+                        .map(x -> x.getPrice().subtract(new BigDecimal(200))
+                                .multiply(new BigDecimal(x.getAmount())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        when(transactionRepository.findByTransactionNumber(anyString()))
+                .thenReturn(Optional.of(transactionEntity));
+        when(transactionDetailsRepository.findAllByTransactionNumber(anyString()))
+                .thenReturn(transactionDetailsEntities);
+        when(productRepository.findById(anyInt()))
+                .thenReturn(Optional.of(new ProductEntity(product)));
+        RestResponse<Object> response = transactionService
+                .deleteTransaction(transactionNumber);
+
+        verify(productRepository).save(productEntityArgumentCaptor.capture());
+        ProductEntity productEntity = productEntityArgumentCaptor.getValue();
+        assertEquals(product.getQuantity() + transactionDetailsEntity.getAmount(), productEntity.getQuantity());
+        assertEquals(ApplicationCode.SUCCESS.getCode(), response.getResponseStatus().getResponseCode());
+        assertEquals(ApplicationCode.SUCCESS.getMessage(), response.getResponseStatus().getResponseMessage());
+        assertNull(response.getData());
+        assertNull(response.getErrorDetails());
+    }
+
+    @Test
+    void testDeleteTransaction_TransactionNotFound() {
+        final String transactionNumber = UUID.randomUUID().toString();
+
+        when(transactionRepository.findByTransactionNumber(transactionNumber)).thenReturn(Optional.empty());
+
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> transactionService.deleteTransaction(transactionNumber));
+        assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getCode(), kooposException.getCode());
+        assertEquals(ApplicationCode.TRANSACTION_NOT_FOUND.getMessage(), kooposException.getMessage());
+    }
+
+    @Test
+    void testDeleteTransaction_ProductNotFound() {
+        final String transactionNumber = UUID.randomUUID().toString();
+        final TransactionDetailsEntity transactionDetailsEntity = TransactionDetailsEntity.builder()
+                .id(1)
+                .transactionNumber(transactionNumber)
+                .productId(1)
+                .amount(4)
+                .price(new BigDecimal(3000))
+                .createdDate(LocalDateTime.now())
+                .build();
+        final List<TransactionDetailsEntity> transactionDetailsEntities = Collections.singletonList(transactionDetailsEntity);
+        final TransactionEntity transactionEntity = TransactionEntity.builder()
+                .id(1)
+                .transactionNumber(transactionNumber)
+                .amount(transactionDetailsEntities.size())
+                .totalPrice(transactionDetailsEntities.stream()
+                        .map(x -> x.getPrice()
+                                .multiply(new BigDecimal(x.getAmount())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .profit(transactionDetailsEntities.stream()
+                        .map(x -> x.getPrice().subtract(new BigDecimal(200))
+                                .multiply(new BigDecimal(x.getAmount())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        when(transactionRepository.findByTransactionNumber(anyString()))
+                .thenReturn(Optional.of(transactionEntity));
+        when(transactionDetailsRepository.findAllByTransactionNumber(anyString()))
+                .thenReturn(transactionDetailsEntities);
+        when(productRepository.findById(anyInt())).thenReturn(Optional.empty());
+
+        KooposException kooposException = assertThrows(KooposException.class,
+                () -> transactionService.deleteTransaction(transactionNumber));
+        assertEquals(ApplicationCode.PRODUCT_NOT_FOUND.getCode(), kooposException.getCode());
+        assertEquals(ApplicationCode.PRODUCT_NOT_FOUND.getMessage(), kooposException.getMessage());
+    }
 }

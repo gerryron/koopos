@@ -46,4 +46,11 @@ public class TransactionController {
     ) {
         return ResponseEntity.ok(transactionService.findTransactionByTransactionNumber(transactionNumber));
     }
+
+    @DeleteMapping("/{transactionNumber}")
+    public ResponseEntity<Object> deleteTransaction(
+            @PathVariable(value = "transactionNumber") String transactionNumber
+    ) {
+        return ResponseEntity.ok(transactionService.deleteTransaction(transactionNumber));
+    }
 }

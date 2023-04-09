@@ -127,4 +127,40 @@ class TransactionControllerTest {
                 .body("data.createdDate", notNullValue())
                 .body("errorDetails", nullValue());
     }
+
+    @Test
+    @Sql("classpath:data/db/product.sql")
+    @Sql("classpath:data/db/transaction.sql")
+    @Sql("classpath:data/db/transaction_details.sql")
+    void shouldDeleteTransaction_ReturnSuccess() {
+        given()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .pathParam("transactionNumber", "transactionNumber01")
+                .log().all()
+                .when()
+                .delete("/api/transaction/{transactionNumber}")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.SUCCESS.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.SUCCESS.getMessage()))
+                .body("data", nullValue())
+                .body("errorDetails", nullValue());
+
+        given()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .pathParam("transactionNumber", "transactionNumber01")
+                .log().all()
+                .when()
+                .get("/api/transaction/{transactionNumber}")
+                .then()
+                .log().all()
+                .assertThat()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .body("responseStatus.responseCode", is(ApplicationCode.TRANSACTION_NOT_FOUND.getCode()))
+                .body("responseStatus.responseMessage", is(ApplicationCode.TRANSACTION_NOT_FOUND.getMessage()))
+                .body("data", nullValue())
+                .body("errorDetails", nullValue());
+    }
 }

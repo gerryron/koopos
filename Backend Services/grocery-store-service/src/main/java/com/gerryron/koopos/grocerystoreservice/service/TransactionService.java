@@ -165,4 +165,27 @@ public class TransactionService {
                         .build())
                 .build();
     }
+
+    @Transactional
+    public RestResponse<Object> deleteTransaction(String transactionNumber) {
+        TransactionEntity transactionEntity = transactionRepository.findByTransactionNumber(transactionNumber)
+                .orElseThrow(() -> new KooposException(ApplicationCode.TRANSACTION_NOT_FOUND));
+        List<TransactionDetailsEntity> transactionDetailsEntities = transactionDetailsRepository
+                .findAllByTransactionNumber(transactionEntity.getTransactionNumber());
+
+        for (TransactionDetailsEntity transactionDetailsEntity : transactionDetailsEntities) {
+            ProductEntity product = productRepository.findById(transactionDetailsEntity.getProductId()).orElseThrow(() ->
+                    new KooposException(ApplicationCode.PRODUCT_NOT_FOUND));
+            product.setQuantity(product.getQuantity() + transactionDetailsEntity.getAmount());
+
+            productRepository.save(product);
+        }
+
+        transactionDetailsRepository.deleteAll(transactionDetailsEntities);
+        transactionRepository.delete(transactionEntity);
+
+        return RestResponse.builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .build();
+    }
 }
