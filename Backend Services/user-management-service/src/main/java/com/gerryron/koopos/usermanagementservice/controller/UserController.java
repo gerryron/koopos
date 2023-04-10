@@ -1,6 +1,7 @@
 package com.gerryron.koopos.usermanagementservice.controller;
 
 import com.gerryron.koopos.usermanagementservice.service.UserService;
+import com.gerryron.koopos.usermanagementservice.shared.request.SignInRequest;
 import com.gerryron.koopos.usermanagementservice.shared.request.SignUpRequest;
 import com.gerryron.koopos.usermanagementservice.shared.response.RestResponse;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +22,17 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
+    @PostMapping("/signUp")
     public ResponseEntity<RestResponse<Object>> signUp(
             @RequestBody @Valid SignUpRequest signUpRequest
             ) {
         return ResponseEntity.ok(userService.createUser(signUpRequest));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<RestResponse<Object>> signIn(
+            @RequestBody @Valid SignInRequest signInRequest
+            ) {
+        return ResponseEntity.ok(userService.login(signInRequest));
     }
 }

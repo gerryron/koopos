@@ -8,6 +8,7 @@ import com.gerryron.koopos.usermanagementservice.repository.UserDetailRepository
 import com.gerryron.koopos.usermanagementservice.repository.UserRepository;
 import com.gerryron.koopos.usermanagementservice.shared.ApplicationCode;
 import com.gerryron.koopos.usermanagementservice.shared.dto.ResponseStatus;
+import com.gerryron.koopos.usermanagementservice.shared.request.SignInRequest;
 import com.gerryron.koopos.usermanagementservice.shared.request.SignUpRequest;
 import com.gerryron.koopos.usermanagementservice.shared.response.RestResponse;
 import org.slf4j.Logger;
@@ -57,6 +58,19 @@ public class UserService {
         userDetailRepository.save(userDetailEntity);
 
         log.info("success create user with username: {}", request.getUsername());
+        return RestResponse.builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .build();
+    }
+
+    public RestResponse<Object> login(SignInRequest request) {
+        UserEntity userEntity = userRepository.findByUsernameOrUserDetail_Email(request.getUsername(), request.getUsername())
+                .orElseThrow(() -> new KooposException(ApplicationCode.LOGIN_FAILED));
+
+        if (!userEntity.getPassword().equals(request.getPassword())) {
+            throw new KooposException(ApplicationCode.LOGIN_FAILED);
+        }
+
         return RestResponse.builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .build();

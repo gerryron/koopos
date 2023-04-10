@@ -5,7 +5,8 @@ public enum ApplicationCode {
     VALIDATION_ERROR("01", "Validation error"),
 
     USERNAME_ALREADY_USED("A1", "Username already used"),
-    INVALID_ROLE("A2", "Invalid Role"),
+    INVALID_ROLE("A2", "Invalid role"),
+    LOGIN_FAILED("A3", "Login failed"),
     ;
 
     private final String code;
