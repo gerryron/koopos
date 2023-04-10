@@ -4,7 +4,7 @@ public enum ApplicationCode {
     SUCCESS("00", "SUCCESS"),
     VALIDATION_ERROR("01", "Validation error"),
 
-    USERNAME_ALREADY_USED("A1", "Username already used"),
+    USERNAME_ALREADY_USED("A1", "Username or email already used"),
     INVALID_ROLE("A2", "Invalid role"),
     LOGIN_FAILED("A3", "Login failed"),
     ;

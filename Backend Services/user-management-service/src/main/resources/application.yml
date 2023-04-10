@@ -16,3 +16,6 @@ spring:
         format_sql: true
         use_sql_comments: true
     show-sql: false
+
+#JWT Configuration
+jwt-secret-key: ${JWT_SECRET_KEY}

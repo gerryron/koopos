@@ -13,6 +13,10 @@ import com.gerryron.koopos.usermanagementservice.shared.request.SignUpRequest;
 import com.gerryron.koopos.usermanagementservice.shared.response.RestResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -21,12 +25,21 @@ import javax.transaction.Transactional;
 public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
     private final UserRepository userRepository;
     private final UserDetailRepository userDetailRepository;
     private final RoleRepository roleRepository;
 
-    public UserService(UserRepository userRepository, UserDetailRepository userDetailRepository,
+
+    public UserService(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder,
+                       JwtService jwtService, UserRepository userRepository, UserDetailRepository userDetailRepository,
                        RoleRepository roleRepository) {
+        this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.userDetailRepository = userDetailRepository;
         this.roleRepository = roleRepository;
@@ -34,7 +47,8 @@ public class UserService {
 
     @Transactional
     public RestResponse<Object> createUser(SignUpRequest request) {
-        boolean isUsernameExists = userRepository.existsByUsername(request.getUsername());
+        boolean isUsernameExists = userRepository
+                .existsByUsernameOrUserDetail_Email(request.getUsername(), request.getEmail());
         boolean isRoleExists = roleRepository.existsById(request.getRole());
         if (isUsernameExists) {
             throw new KooposException(ApplicationCode.USERNAME_ALREADY_USED);
@@ -45,7 +59,7 @@ public class UserService {
 
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(request.getUsername());
-        userEntity.setPassword(request.getPassword());
+        userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
         userEntity.setRoleId(request.getRole());
 
         UserDetailEntity userDetailEntity = new UserDetailEntity();
@@ -63,14 +77,22 @@ public class UserService {
                 .build();
     }
 
-    public RestResponse<Object> login(SignInRequest request) {
-        UserEntity userEntity = userRepository.findByUsernameOrUserDetail_Email(request.getUsername(), request.getUsername())
-                .orElseThrow(() -> new KooposException(ApplicationCode.LOGIN_FAILED));
-
-        if (!userEntity.getPassword().equals(request.getPassword())) {
+    public RestResponse<String> login(SignInRequest request) {
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        if (!authentication.isAuthenticated()) {
+            log.info("username {} login with incorrect password", request.getUsername());
             throw new KooposException(ApplicationCode.LOGIN_FAILED);
         }
 
+        return RestResponse.<String>builder()
+                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
+                .data(jwtService.generateToken(request.getUsername()))
+                .build();
+    }
+
+    public RestResponse<Object> validateToken(String token) {
+        jwtService.validateToken(token);
         return RestResponse.builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .build();
