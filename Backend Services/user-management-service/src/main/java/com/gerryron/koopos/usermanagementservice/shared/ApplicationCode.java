@@ -7,6 +7,7 @@ public enum ApplicationCode {
     USERNAME_ALREADY_USED("A1", "Username or email already used"),
     INVALID_ROLE("A2", "Invalid role"),
     LOGIN_FAILED("A3", "Login failed"),
+    EXPIRED_AUTHENTICATION("A4", "Expired authentication, please login again"),
     ;
 
     private final String code;

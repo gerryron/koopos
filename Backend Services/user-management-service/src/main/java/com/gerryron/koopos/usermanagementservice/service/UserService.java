@@ -1,5 +1,6 @@
 package com.gerryron.koopos.usermanagementservice.service;
 
+import com.gerryron.koopos.usermanagementservice.config.JwtService;
 import com.gerryron.koopos.usermanagementservice.entity.UserDetailEntity;
 import com.gerryron.koopos.usermanagementservice.entity.UserEntity;
 import com.gerryron.koopos.usermanagementservice.exception.KooposException;
@@ -10,7 +11,9 @@ import com.gerryron.koopos.usermanagementservice.shared.ApplicationCode;
 import com.gerryron.koopos.usermanagementservice.shared.dto.ResponseStatus;
 import com.gerryron.koopos.usermanagementservice.shared.request.SignInRequest;
 import com.gerryron.koopos.usermanagementservice.shared.request.SignUpRequest;
+import com.gerryron.koopos.usermanagementservice.shared.response.AuthenticationResponse;
 import com.gerryron.koopos.usermanagementservice.shared.response.RestResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -77,7 +80,7 @@ public class UserService {
                 .build();
     }
 
-    public RestResponse<String> login(SignInRequest request) {
+    public RestResponse<AuthenticationResponse> login(SignInRequest request) {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         if (!authentication.isAuthenticated()) {
@@ -85,14 +88,23 @@ public class UserService {
             throw new KooposException(ApplicationCode.LOGIN_FAILED);
         }
 
-        return RestResponse.<String>builder()
+        String token = jwtService.generateToken(request.getUsername());
+
+        return RestResponse.<AuthenticationResponse>builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
-                .data(jwtService.generateToken(request.getUsername()))
+                .data(AuthenticationResponse.builder()
+                        .accessToken(token)
+                        .build())
                 .build();
     }
 
     public RestResponse<Object> validateToken(String token) {
-        jwtService.validateToken(token);
+        try {
+            jwtService.validateToken(token);
+        } catch (ExpiredJwtException expiredJwtException) {
+            throw new KooposException(ApplicationCode.EXPIRED_AUTHENTICATION);
+        }
+
         return RestResponse.builder()
                 .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .build();
