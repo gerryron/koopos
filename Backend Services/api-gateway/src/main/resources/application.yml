@@ -10,6 +10,8 @@ spring:
           uri: lb://GROCERY-STORE-SERVICE
           predicates:
             - Path=/api/gs/**
+          filters:
+            - AuthenticationFilter
         - id: user-management-service
           uri: lb://USER-MANAGEMENT-SERVICE
           predicates:
@@ -23,3 +25,8 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     hostname: localhost
+
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY}
