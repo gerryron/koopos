@@ -6,7 +6,10 @@ import com.gerryron.koopos.usermanagementservice.shared.request.SignUpRequest;
 import com.gerryron.koopos.usermanagementservice.shared.response.AuthenticationResponse;
 import com.gerryron.koopos.usermanagementservice.shared.response.RestResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -32,12 +35,5 @@ public class UserController {
             @RequestBody @Valid SignInRequest signInRequest
     ) {
         return ResponseEntity.ok(userService.login(signInRequest));
-    }
-
-    @GetMapping("/validate")
-    public ResponseEntity<RestResponse<Object>> validateToken(
-            @RequestParam("token") String token
-    ) {
-        return ResponseEntity.ok(userService.validateToken(token));
     }
 }

@@ -13,7 +13,6 @@ import com.gerryron.koopos.usermanagementservice.shared.request.SignInRequest;
 import com.gerryron.koopos.usermanagementservice.shared.request.SignUpRequest;
 import com.gerryron.koopos.usermanagementservice.shared.response.AuthenticationResponse;
 import com.gerryron.koopos.usermanagementservice.shared.response.RestResponse;
-import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -95,18 +94,6 @@ public class UserService {
                 .data(AuthenticationResponse.builder()
                         .accessToken(token)
                         .build())
-                .build();
-    }
-
-    public RestResponse<Object> validateToken(String token) {
-        try {
-            jwtService.validateToken(token);
-        } catch (ExpiredJwtException expiredJwtException) {
-            throw new KooposException(ApplicationCode.EXPIRED_AUTHENTICATION);
-        }
-
-        return RestResponse.builder()
-                .responseStatus(new ResponseStatus(ApplicationCode.SUCCESS))
                 .build();
     }
 }
