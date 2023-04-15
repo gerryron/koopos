@@ -28,7 +28,7 @@ create table if not exists user_detail (
 	id int not null auto_increment,
     user_id int not null,
     email varchar(100) unique not null,
-    phone_number varchar(25) unique not null,
+    phone_number varchar(25) not null,
     created_date datetime default current_timestamp,
     updated_date datetime on update current_timestamp,
     primary key (id),
