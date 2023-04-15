@@ -9,7 +9,11 @@ spring:
         - id: grocery-store-service
           uri: lb://GROCERY-STORE-SERVICE
           predicates:
-            - Path=/api/grocery-store/**
+            - Path=/api/gs/**
+        - id: user-management-service
+          uri: lb://USER-MANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/auth/**
 
 eureka:
   client:
