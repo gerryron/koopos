@@ -14,7 +14,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void configurePathMatch(PathMatchConfigurer configure) {
-        configure.addPathPrefix("api", HandlerTypePredicate.forAnnotation(RestController.class));
+        configure.addPathPrefix("api/auth", HandlerTypePredicate.forAnnotation(RestController.class));
     }
 
     @Override
