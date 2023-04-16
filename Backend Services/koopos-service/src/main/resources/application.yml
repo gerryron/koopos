@@ -1,8 +1,6 @@
-server:
-  port: 9192
 spring:
   application:
-    name: grocery-store-service
+    name: koopos-service
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
