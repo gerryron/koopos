@@ -1,6 +1,8 @@
 package com.gerryron.kooposservice.helper;
 
+import com.gerryron.kooposservice.dto.response.CategoryResponse;
 import com.gerryron.kooposservice.dto.response.ProductResponse;
+import com.gerryron.kooposservice.entity.CategoryEntity;
 import com.gerryron.kooposservice.entity.ProductEntity;
 
 import java.util.stream.Collectors;
@@ -17,12 +19,30 @@ public class MapHelper {
         productResponse.setSellingPrice(productEntity.getSellingPrice());
         productResponse.setCreatedDate(productEntity.getCreatedDate());
         productResponse.setUpdatedDate(productEntity.getUpdatedDate());
-
         productResponse.setCategories(productEntity.getProductCategories()
                 .stream()
                 .map(productCategory -> productCategory.getCategory().getName())
                 .collect(Collectors.toSet()));
 
         return productResponse;
+    }
+
+    public static CategoryResponse categoryEntityToResponse(CategoryEntity categoryEntity) {
+        CategoryResponse categoryResponse = new CategoryResponse();
+        categoryResponse.setCategoryName(categoryEntity.getName());
+        categoryResponse.setCreatedDate(categoryEntity.getCreatedDate());
+        categoryResponse.setUpdatedDate(categoryEntity.getUpdatedDate());
+        categoryResponse.setProducts(categoryEntity.getProductCategories()
+                .stream()
+                .map(productCategory -> {
+                    ProductEntity product = productCategory.getProduct();
+                    return CategoryResponse.Product.builder()
+                            .productName(product.getProductName())
+                            .barcode(product.getBarcode())
+                            .build();
+                })
+                .collect(Collectors.toSet()));
+
+        return categoryResponse;
     }
 }

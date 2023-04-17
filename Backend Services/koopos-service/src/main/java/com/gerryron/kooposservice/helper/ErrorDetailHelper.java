@@ -32,4 +32,12 @@ public class ErrorDetailHelper {
                 .message("Category already exists")
                 .build());
     }
+
+    public static List<ErrorDetail> categoryNameNotFound() {
+        return Collections.singletonList(ErrorDetail.builder()
+                .object(CategoryRequest.class.getSimpleName())
+                .field("categoryName")
+                .message("Category name not found")
+                .build());
+    }
 }
