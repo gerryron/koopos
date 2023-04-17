@@ -10,10 +10,12 @@ create table if not exists role (
 );
 
 insert into role (id, role_name) values (1, 'OWNER'); 
+insert into role (id, role_name) values (2, 'STAFF'); 
 
 create table if not exists user (
 	id int not null auto_increment,
     username varchar(25) unique not null,
+    email varchar(100) unique not null,
     password varchar(100) not null,
     role_id int not null,
     created_date datetime default current_timestamp,
@@ -27,8 +29,10 @@ create table if not exists user (
 create table if not exists user_detail (
 	id int not null auto_increment,
     user_id int not null,
-    email varchar(100) unique not null,
-    phone_number varchar(25) not null,
+    first_name varchar(50) not null,
+    last_name varchar(50) default null,
+    phone_number varchar(20) not null,
+    address varchar(100) default null,
     created_date datetime default current_timestamp,
     updated_date datetime on update current_timestamp,
     primary key (id),
