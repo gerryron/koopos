@@ -5,6 +5,7 @@ import com.gerryron.kooposservice.dto.RestResponse;
 import com.gerryron.kooposservice.dto.request.ProductRequest;
 import com.gerryron.kooposservice.dto.response.ProductResponse;
 import com.gerryron.kooposservice.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -15,17 +16,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/product")
+@RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
-
     @PostMapping
-    public ResponseEntity<RestResponse<Object>> saveProduct(@RequestBody @Valid ProductRequest product) {
-        return ResponseEntity.ok(productService.createProduct(product));
+    public ResponseEntity<RestResponse<Object>> saveProduct(@RequestBody @Valid ProductRequest request) {
+        return ResponseEntity.ok(productService.createProduct(request));
     }
 
     @GetMapping
@@ -49,8 +47,8 @@ public class ProductController {
     @PutMapping("/{barcode}")
     public ResponseEntity<RestResponse<Object>> putProduct(
             @PathVariable(value = "barcode") String barcode,
-            @RequestBody @Valid ProductRequest product) {
-        return ResponseEntity.ok((productService.updateProduct(barcode, product)));
+            @RequestBody @Valid ProductRequest request) {
+        return ResponseEntity.ok((productService.updateProduct(barcode, request)));
     }
 
     @DeleteMapping("/{barcode}")

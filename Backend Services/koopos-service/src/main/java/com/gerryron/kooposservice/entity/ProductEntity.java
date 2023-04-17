@@ -1,21 +1,21 @@
 package com.gerryron.kooposservice.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-@Data
+@Entity
+@Table(name = "product", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "barcode", name = "barcode")
+})
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "product")
 public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,10 +30,6 @@ public class ProductEntity {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "product_categories",
-            joinColumns = @JoinColumn(name = "product_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id", referencedColumnName = "id"))
-    private Set<CategoryEntity> categories;
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private Set<ProductCategories> productCategories;
 }

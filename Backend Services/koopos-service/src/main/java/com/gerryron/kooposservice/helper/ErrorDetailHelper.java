@@ -1,6 +1,7 @@
 package com.gerryron.kooposservice.helper;
 
 import com.gerryron.kooposservice.dto.ErrorDetail;
+import com.gerryron.kooposservice.dto.request.CategoryRequest;
 import com.gerryron.kooposservice.dto.request.ProductRequest;
 
 import java.util.Collections;
@@ -12,7 +13,7 @@ public class ErrorDetailHelper {
         return Collections.singletonList(ErrorDetail.builder()
                 .object(ProductRequest.class.getSimpleName())
                 .field("Barcode")
-                .message("Product Already Exists")
+                .message("Product already exists")
                 .build());
     }
 
@@ -21,6 +22,14 @@ public class ErrorDetailHelper {
                 .object(String.class.getSimpleName())
                 .field("Barcode")
                 .message("Barcode not found")
+                .build());
+    }
+
+    public static List<ErrorDetail> categoryNameAlreadyExists() {
+        return Collections.singletonList(ErrorDetail.builder()
+                .object(CategoryRequest.class.getSimpleName())
+                .field("categoryName")
+                .message("Category already exists")
                 .build());
     }
 }
