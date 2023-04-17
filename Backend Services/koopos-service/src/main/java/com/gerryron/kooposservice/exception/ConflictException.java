@@ -4,13 +4,15 @@ import com.gerryron.kooposservice.dto.ErrorDetail;
 import com.gerryron.kooposservice.enums.ApplicationCode;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class ConflictException extends KooposException {
 
-    private final ErrorDetail errorDetail;
+    private final List<ErrorDetail> errorDetails;
 
-    public ConflictException(ErrorDetail errorDetail) {
+    public ConflictException(List<ErrorDetail> errorDetails) {
         super(ApplicationCode.DATA_ALREADY_EXISTS);
-        this.errorDetail = errorDetail;
+        this.errorDetails = errorDetails;
     }
 }

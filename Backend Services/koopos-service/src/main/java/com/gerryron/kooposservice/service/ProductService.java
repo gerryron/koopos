@@ -95,6 +95,7 @@ public class ProductService {
         productEntity.setUpdatedDate(LocalDateTime.now());
 
         productRepository.save(productEntity);
+        log.info("Product with barcode: {} updated successfully", barcode);
 
         return RestResponse.builder()
                 .responseStatus(ApplicationCode.SUCCESS)
@@ -106,6 +107,8 @@ public class ProductService {
                 .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.barcodeNotFound()));
 
         productRepository.delete(productEntity);
+        log.info("Product with barcode: {} deleted successfully", barcode);
+
         return RestResponse.builder()
                 .responseStatus(ApplicationCode.SUCCESS)
                 .build();

@@ -4,13 +4,15 @@ import com.gerryron.kooposservice.dto.ErrorDetail;
 import com.gerryron.kooposservice.enums.ApplicationCode;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class NotFoundException extends KooposException {
 
-    private final ErrorDetail errorDetail;
+    private final List<ErrorDetail> errorDetails;
 
-    public NotFoundException(ErrorDetail errorDetail) {
+    public NotFoundException(List<ErrorDetail> errorDetails) {
         super(ApplicationCode.DATA_NOT_FOUND);
-        this.errorDetail = errorDetail;
+        this.errorDetails = errorDetails;
     }
 }
