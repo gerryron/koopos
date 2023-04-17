@@ -99,11 +99,13 @@ public class ProductService {
                 .build();
     }
 
+    @Transactional
     public RestResponse<Object> updateProduct(String barcode, ProductRequest request) {
         ProductEntity productEntity = productRepository.findByBarcode(barcode)
                 .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.barcodeNotFound()));
         // validate if barcode wants to be replaced
-        if (productRepository.existsByBarcode(request.getBarcode())) {
+        if (!barcode.equalsIgnoreCase(request.getBarcode()) &&
+                productRepository.existsByBarcode(request.getBarcode())) {
             log.warn("Product with barcode: {} already exists", request.getBarcode());
             throw new ConflictException(ErrorDetailHelper.barcodeAlreadyExists());
         }
@@ -115,6 +117,16 @@ public class ProductService {
         productEntity.setBuyingPrice(request.getBuyingPrice());
         productEntity.setSellingPrice(request.getSellingPrice());
         productEntity.setUpdatedDate(LocalDateTime.now());
+        productCategoriesRepository.deleteAll(productEntity.getProductCategories());
+
+        for (String category : request.getCategories()) {
+            CategoryEntity categoryEntity = categoryRepository.findByName(category).orElseThrow();
+            productCategoriesRepository.save(ProductCategories.builder()
+                    .id(new ProductCategories.CompositeKey(productEntity.getId(), categoryEntity.getId()))
+                    .product(productEntity)
+                    .category(categoryEntity)
+                    .build());
+        }
 
         productRepository.save(productEntity);
         log.info("Product with barcode: {} updated successfully", barcode);
@@ -124,10 +136,12 @@ public class ProductService {
                 .build();
     }
 
+    @Transactional
     public RestResponse<Object> deleteProduct(String barcode) {
         ProductEntity productEntity = productRepository.findByBarcode(barcode)
                 .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.barcodeNotFound()));
 
+        productCategoriesRepository.deleteAll(productEntity.getProductCategories());
         productRepository.delete(productEntity);
         log.info("Product with barcode: {} deleted successfully", barcode);
 
