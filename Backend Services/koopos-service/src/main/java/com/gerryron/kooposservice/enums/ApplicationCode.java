@@ -11,6 +11,7 @@ public enum ApplicationCode {
     INVALID_PARAMETER("01", "Invalid parameter"),
     DATA_ALREADY_EXISTS("02", "Data already exists"),
     DATA_NOT_FOUND("03", "Data not found"),
+    AUTHENTICATION_ERROR("04", "Authentication error"),
     ;
 
     private final String code;

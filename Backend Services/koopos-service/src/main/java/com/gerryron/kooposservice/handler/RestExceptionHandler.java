@@ -3,6 +3,7 @@ package com.gerryron.kooposservice.handler;
 import com.gerryron.kooposservice.dto.ErrorDetail;
 import com.gerryron.kooposservice.dto.RestResponse;
 import com.gerryron.kooposservice.enums.ApplicationCode;
+import com.gerryron.kooposservice.exception.AuthenticationException;
 import com.gerryron.kooposservice.exception.ConflictException;
 import com.gerryron.kooposservice.exception.KooposException;
 import com.gerryron.kooposservice.exception.NotFoundException;
@@ -10,16 +11,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class RestExceptionHandler {
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<RestResponse<Object>> handleAuthenticationException(HttpServletRequest request, AuthenticationException e) {
+        log.warn("AuthenticationException occurred:: Method= {} URL= {}  Code= {} Message= {}",
+                request.getMethod(), request.getRequestURL(), e.getCode(), e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(RestResponse.builder()
+                        .responseStatus(e.getCode(), e.getMessage())
+                        .build());
+    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<RestResponse<Object>> handleNotFoundException(HttpServletRequest request, NotFoundException e) {
