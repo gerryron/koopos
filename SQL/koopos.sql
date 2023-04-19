@@ -62,30 +62,30 @@ create table if not exists category (
     primary key (id)
 );
 
-create table if not exists transaction (
+create table if not exists `order` (
 	id int not null auto_increment,
-    transaction_number varchar(255) unique not null,
-    amount int not null,
-    total_price decimal(21,2),
-    profit decimal(21,2),
+    order_number varchar(50) unique not null,
+    status varchar(10) not null default 'PENDING',
     created_date datetime default current_timestamp,
     updated_date datetime on update current_timestamp,
     primary key (id)
 );
 
-create table if not exists transaction_details (
+create table if not exists order_details (
 	id int not null auto_increment,
-    transaction_number varchar(255) not null,
+    order_number varchar(50) not null,
     product_id int not null,
-    amount int not null,
-    price decimal(21,2),
+    quantity int not null,
+    price decimal(21,2) not null,
+    discount decimal(21,2) default 0,
+    profit decimal(21,2) not null,
     created_date datetime default current_timestamp,
     updated_date datetime on update current_timestamp,
     primary key (id),
-    constraint constr_transactionDetails_transaction_fk 
-		foreign key transaction_fk (transaction_number) REFERENCES transaction (transaction_number)
+    constraint constr_orderDetails_order_fk 
+		foreign key order_fk (order_number) REFERENCES `order` (order_number)
         on delete cascade on update cascade,
-	constraint constr_transactionDetails_product_fk 
+	constraint constr_orderDetail_product_fk 
 		foreign key product_fk (product_id) REFERENCES product (id)
         on delete cascade on update cascade
 );
