@@ -3,10 +3,7 @@ package com.gerryron.kooposservice.handler;
 import com.gerryron.kooposservice.dto.ErrorDetail;
 import com.gerryron.kooposservice.dto.RestResponse;
 import com.gerryron.kooposservice.enums.ApplicationCode;
-import com.gerryron.kooposservice.exception.AuthenticationException;
-import com.gerryron.kooposservice.exception.ConflictException;
-import com.gerryron.kooposservice.exception.KooposException;
-import com.gerryron.kooposservice.exception.NotFoundException;
+import com.gerryron.kooposservice.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +27,18 @@ public class RestExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(RestResponse.builder()
                         .responseStatus(e.getCode(), e.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<RestResponse<Object>> handleBadRequestException(HttpServletRequest request, BadRequestException e) {
+        log.warn("BadRequestException occurred:: Method= {} URL= {}  Code= {} Message= {}",
+                request.getMethod(), request.getRequestURL(), e.getCode(), e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(RestResponse.builder()
+                        .responseStatus(e.getCode(), e.getMessage())
+                        .errorDetails(e.getErrorDetails())
                         .build());
     }
 

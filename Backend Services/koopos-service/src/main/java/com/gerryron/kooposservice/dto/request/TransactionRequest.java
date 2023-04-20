@@ -22,7 +22,7 @@ public class TransactionRequest {
     public static class ProductPurchased {
 
         @NotEmpty
-        private String productBarcode;
+        private String barcode;
         @Positive
         private Integer quantity;
         @NotNull
