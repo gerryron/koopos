@@ -32,4 +32,8 @@ public class ProductEntity {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private Set<ProductCategories> productCategories;
+
+    public BigDecimal getProfit() {
+        return sellingPrice.subtract(buyingPrice);
+    }
 }
