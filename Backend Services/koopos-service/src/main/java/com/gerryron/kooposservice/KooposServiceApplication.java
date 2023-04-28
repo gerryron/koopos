@@ -9,7 +9,7 @@ import java.util.TimeZone;
 public class KooposServiceApplication {
 
     public static void main(String[] args) {
-		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Jakarta"));
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Jakarta"));
         SpringApplication.run(KooposServiceApplication.class, args);
     }
 

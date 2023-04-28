@@ -1,17 +1,16 @@
 package com.gerryron.kooposservice.dto;
 
 import com.gerryron.kooposservice.enums.ApplicationCode;
-import lombok.Getter;
 
 import java.util.List;
 
-@Getter
 public class RestResponse<T> {
+
     private final ResponseStatus responseStatus;
     private final T data;
     private final List<ErrorDetail> errorDetails;
 
-    RestResponse(Builder<T> builder) {
+    public RestResponse(Builder<T> builder) {
         this.responseStatus = builder.responseStatus;
         this.data = builder.data;
         this.errorDetails = builder.errorDetails;
@@ -19,6 +18,18 @@ public class RestResponse<T> {
 
     public static <T> Builder<T> builder() {
         return new Builder<>();
+    }
+
+    public ResponseStatus getResponseStatus() {
+        return responseStatus;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public List<ErrorDetail> getErrorDetails() {
+        return errorDetails;
     }
 
     public static class Builder<T> {

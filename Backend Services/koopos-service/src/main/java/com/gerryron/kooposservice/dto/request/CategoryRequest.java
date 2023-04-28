@@ -1,11 +1,18 @@
 package com.gerryron.kooposservice.dto.request;
 
-import lombok.Data;
-
 import javax.validation.constraints.NotBlank;
 
-@Data
 public class CategoryRequest {
+
     @NotBlank
     private String categoryName;
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
 }

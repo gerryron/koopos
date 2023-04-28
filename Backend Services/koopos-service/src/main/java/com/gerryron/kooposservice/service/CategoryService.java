@@ -12,8 +12,8 @@ import com.gerryron.kooposservice.helper.ErrorDetailHelper;
 import com.gerryron.kooposservice.helper.MapHelper;
 import com.gerryron.kooposservice.repository.CategoryRepository;
 import com.gerryron.kooposservice.repository.ProductCategoriesRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,13 +23,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class CategoryService {
+    private static final Logger log = LoggerFactory.getLogger(CategoryService.class);
 
     private final CategoryRepository categoryRepository;
     private final ProductCategoriesRepository productCategoriesRepository;
+
+    public CategoryService(CategoryRepository categoryRepository, ProductCategoriesRepository productCategoriesRepository) {
+        this.categoryRepository = categoryRepository;
+        this.productCategoriesRepository = productCategoriesRepository;
+    }
 
     public RestResponse<Object> createCategory(CategoryRequest request) {
         if (categoryRepository.existsByName(request.getCategoryName())) {
@@ -37,12 +41,12 @@ public class CategoryService {
             throw new ConflictException(ErrorDetailHelper.categoryNameAlreadyExists());
         }
 
-        categoryRepository.save(CategoryEntity.builder()
-                .name(request.getCategoryName())
-                .createdDate(LocalDateTime.now())
-                .build());
-        log.info("Category with name: {} created successfully", request.getCategoryName());
+        CategoryEntity categoryEntity = new CategoryEntity();
+        categoryEntity.setName(request.getCategoryName());
+        categoryEntity.setCreatedDate(LocalDateTime.now());
+        categoryRepository.save(categoryEntity);
 
+        log.info("Category with name: {} created successfully", request.getCategoryName());
         return RestResponse.builder()
                 .responseStatus(ApplicationCode.SUCCESS)
                 .build();
@@ -92,8 +96,8 @@ public class CategoryService {
         categoryEntity.setName(request.getCategoryName());
         categoryEntity.setUpdatedDate(LocalDateTime.now());
         categoryRepository.save(categoryEntity);
-        log.info("Category with name: {} updated successfully", categoryName);
 
+        log.info("Category with name: {} updated successfully", categoryName);
         return RestResponse.builder()
                 .responseStatus(ApplicationCode.SUCCESS)
                 .build();
@@ -106,8 +110,8 @@ public class CategoryService {
 
         productCategoriesRepository.deleteAll(categoryEntity.getProductCategories());
         categoryRepository.delete(categoryEntity);
-        log.info("Category with name: {} deleted successfully", categoryName);
 
+        log.info("Category with name: {} deleted successfully", categoryName);
         return RestResponse.builder()
                 .responseStatus(ApplicationCode.SUCCESS)
                 .build();

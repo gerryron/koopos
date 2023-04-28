@@ -1,11 +1,6 @@
 package com.gerryron.kooposservice.enums;
 
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-@Getter
-@RequiredArgsConstructor
 public enum ApplicationCode {
     SUCCESS("00", "SUCCESS"),
     INVALID_PARAMETER("01", "Invalid parameter"),
@@ -16,4 +11,17 @@ public enum ApplicationCode {
 
     private final String code;
     private final String message;
+
+    ApplicationCode(String code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

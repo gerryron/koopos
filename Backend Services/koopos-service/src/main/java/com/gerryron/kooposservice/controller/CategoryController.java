@@ -5,7 +5,6 @@ import com.gerryron.kooposservice.dto.RestResponse;
 import com.gerryron.kooposservice.dto.request.CategoryRequest;
 import com.gerryron.kooposservice.dto.response.CategoryResponse;
 import com.gerryron.kooposservice.service.CategoryService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -17,10 +16,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/category")
-@RequiredArgsConstructor
 public class CategoryController {
 
     private final CategoryService categoryService;
+
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     @PostMapping
     public ResponseEntity<RestResponse<Object>> postCategory(@RequestBody @Valid CategoryRequest request) {

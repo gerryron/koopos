@@ -13,8 +13,8 @@ import com.gerryron.kooposservice.helper.ErrorDetailHelper;
 import com.gerryron.kooposservice.repository.ProductRepository;
 import com.gerryron.kooposservice.repository.TransactionDetailRepository;
 import com.gerryron.kooposservice.repository.TransactionRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -26,23 +26,29 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class TransactionService {
+    private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
     private final ProductRepository productRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionDetailRepository transactionDetailRepository;
 
+    public TransactionService(ProductRepository productRepository, TransactionRepository transactionRepository,
+                              TransactionDetailRepository transactionDetailRepository) {
+        this.productRepository = productRepository;
+        this.transactionRepository = transactionRepository;
+        this.transactionDetailRepository = transactionDetailRepository;
+    }
+
     @Transactional
     public RestResponse<Object> createTransaction(TransactionRequest request) {
 
         final Set<TransactionDetailEntity> transactionDetailEntities = new HashSet<>();
-        final TransactionEntity transactionEntity = transactionRepository.save(TransactionEntity.builder()
-                .transactionNumber(request.getTransactionNumber())
-                .status(TransactionStatus.PENDING)
-                .createdDate(LocalDateTime.now())
-                .build());
+        TransactionEntity transactionEntity = new TransactionEntity();
+        transactionEntity.setTransactionNumber(request.getTransactionNumber());
+        transactionEntity.setStatus(TransactionStatus.PENDING);
+        transactionEntity.setCreatedDate(LocalDateTime.now());
+        final TransactionEntity savedTransaction = transactionRepository.save(transactionEntity);
 
         List<ErrorDetail> outOfStockProductError = new ArrayList<>();
         for (TransactionRequest.ProductPurchased productPurchased : request.getProductsPurchased()) {
@@ -52,20 +58,19 @@ public class TransactionService {
                 outOfStockProductError.add(ErrorDetailHelper
                         .invalidTransactionProductQuantity(productEntity.getProductName()));
             }
+            if (!outOfStockProductError.isEmpty()) continue;
 
-            if (!outOfStockProductError.isEmpty()) {
-                continue;
-            }
-            transactionDetailEntities.add(TransactionDetailEntity.builder()
-                    .transaction(transactionEntity)
-                    .productId(productEntity.getId())
-                    .quantity(productPurchased.getQuantity())
-                    .price(productEntity.getSellingPrice().multiply(new BigDecimal(productPurchased.getQuantity())))
-                    .discount(productPurchased.getDiscount())
-                    .profit(productEntity.getProfit().multiply(new BigDecimal(productPurchased.getQuantity()))
-                            .subtract(productPurchased.getDiscount()))
-                    .createdDate(LocalDateTime.now())
-                    .build());
+            TransactionDetailEntity transactionDetailEntity = new TransactionDetailEntity();
+            transactionDetailEntity.setTransaction(savedTransaction);
+            transactionDetailEntity.setProductId(productEntity.getId());
+            transactionDetailEntity.setQuantity(productPurchased.getQuantity());
+            transactionDetailEntity.setPrice(productEntity.getSellingPrice()
+                    .multiply(new BigDecimal(productPurchased.getQuantity())));
+            transactionDetailEntity.setDiscount(productPurchased.getDiscount());
+            transactionDetailEntity.setProfit(productEntity.getProfit().multiply(new BigDecimal(productPurchased.getQuantity()))
+                    .subtract(productPurchased.getDiscount()));
+            transactionDetailEntity.setCreatedDate(LocalDateTime.now());
+            transactionDetailEntities.add(transactionDetailEntity);
         }
 
         if (!outOfStockProductError.isEmpty()) {

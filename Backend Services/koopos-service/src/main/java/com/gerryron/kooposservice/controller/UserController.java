@@ -5,7 +5,6 @@ import com.gerryron.kooposservice.dto.request.SignInRequest;
 import com.gerryron.kooposservice.dto.request.SignUpRequest;
 import com.gerryron.kooposservice.dto.response.SignInResponse;
 import com.gerryron.kooposservice.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,10 +16,13 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<RestResponse<Object>> signUp(@RequestBody @Valid SignUpRequest request) {

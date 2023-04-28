@@ -15,8 +15,8 @@ import com.gerryron.kooposservice.helper.ErrorDetailHelper;
 import com.gerryron.kooposservice.repository.RoleRepository;
 import com.gerryron.kooposservice.repository.UserDetailRepository;
 import com.gerryron.kooposservice.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,17 +27,27 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
 public class UserService {
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final UserDetailRepository userDetailRepository;
     private final RoleRepository roleRepository;
 
     private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+    public UserService(UserRepository userRepository, UserDetailRepository userDetailRepository,
+                       RoleRepository roleRepository, AuthenticationManager authenticationManager,
+                       PasswordEncoder passwordEncoder, JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.userDetailRepository = userDetailRepository;
+        this.roleRepository = roleRepository;
+        this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
 
     @Transactional
     public RestResponse<Object> createUser(SignUpRequest request) {
@@ -51,21 +61,22 @@ public class UserService {
             throw new NotFoundException(ErrorDetailHelper.userInvalidRole());
         }
 
-        UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .roleId(request.getRole())
-                .createdDate(LocalDateTime.now())
-                .build());
-        userDetailRepository.save(UserDetailEntity.builder()
-                .user(userEntity)
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .phoneNumber(request.getPhoneNumber())
-                .address(request.getAddress())
-                .createdDate(LocalDateTime.now())
-                .build());
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUsername(request.getUsername());
+        userEntity.setEmail(request.getEmail());
+        userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
+        userEntity.setRoleId(request.getRole());
+        userEntity.setCreatedDate(LocalDateTime.now());
+        UserEntity savedUser = userRepository.save(userEntity);
+
+        UserDetailEntity userDetailEntity = new UserDetailEntity();
+        userDetailEntity.setUser(savedUser);
+        userDetailEntity.setFirstName(request.getFirstName());
+        userDetailEntity.setLastName(request.getLastName());
+        userDetailEntity.setPhoneNumber(request.getPhoneNumber());
+        userDetailEntity.setAddress(request.getAddress());
+        userDetailEntity.setCreatedDate(LocalDateTime.now());
+        userDetailRepository.save(userDetailEntity);
 
         log.info("User with username: {} created successfully", request.getUsername());
         return RestResponse.builder()

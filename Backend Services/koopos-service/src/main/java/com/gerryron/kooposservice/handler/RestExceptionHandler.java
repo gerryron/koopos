@@ -4,7 +4,8 @@ import com.gerryron.kooposservice.dto.ErrorDetail;
 import com.gerryron.kooposservice.dto.RestResponse;
 import com.gerryron.kooposservice.enums.ApplicationCode;
 import com.gerryron.kooposservice.exception.*;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,9 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @RestControllerAdvice
 public class RestExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<RestResponse<Object>> handleAuthenticationException(HttpServletRequest request, AuthenticationException e) {
