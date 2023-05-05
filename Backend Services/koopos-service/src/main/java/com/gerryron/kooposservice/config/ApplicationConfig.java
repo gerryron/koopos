@@ -1,6 +1,6 @@
 package com.gerryron.kooposservice.config;
 
-import com.gerryron.kooposservice.config.auth.CustomUserDetailsService;
+import com.gerryron.kooposservice.config.auth.AuthUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,7 +16,7 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new CustomUserDetailsService();
+        return new AuthUserDetailsService();
     }
 
     @Bean

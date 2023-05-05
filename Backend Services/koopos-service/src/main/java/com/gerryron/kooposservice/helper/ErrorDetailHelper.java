@@ -71,4 +71,12 @@ public class ErrorDetailHelper {
                 .build();
     }
 
+    public static List<ErrorDetail> orderNotFound() {
+        return Collections.singletonList(ErrorDetail.builder()
+                .object(String.class.getSimpleName())
+                .field("orderNumber")
+                .message("orderNumber not found")
+                .build());
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.gerryron.kooposservice.controller;
 
 import com.gerryron.kooposservice.dto.RestResponse;
+import com.gerryron.kooposservice.dto.request.CancelOrderRequest;
 import com.gerryron.kooposservice.dto.request.OrderRequest;
 import com.gerryron.kooposservice.service.OrderService;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,11 @@ public class OrderController {
     public ResponseEntity<RestResponse<Object>> postOrder(@RequestBody @Valid OrderRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderService.createOrder(request));
+    }
+
+    @PostMapping("/canceled")
+    public ResponseEntity<RestResponse<Object>> cancelOrder(@RequestBody @Valid CancelOrderRequest request) {
+        return ResponseEntity.ok(orderService.cancelOrder(request));
     }
 
 }

@@ -1,20 +1,26 @@
 package com.gerryron.kooposservice.service;
 
+import com.gerryron.kooposservice.config.auth.AuthUserDetails;
 import com.gerryron.kooposservice.dto.ErrorDetail;
 import com.gerryron.kooposservice.dto.RestResponse;
+import com.gerryron.kooposservice.dto.request.CancelOrderRequest;
 import com.gerryron.kooposservice.dto.request.OrderRequest;
 import com.gerryron.kooposservice.entity.OrderDetailsEntity;
 import com.gerryron.kooposservice.entity.OrderEntity;
 import com.gerryron.kooposservice.entity.ProductEntity;
+import com.gerryron.kooposservice.entity.UserEntity;
 import com.gerryron.kooposservice.enums.ApplicationCode;
 import com.gerryron.kooposservice.enums.OrderStatus;
 import com.gerryron.kooposservice.exception.BadRequestException;
+import com.gerryron.kooposservice.exception.NotFoundException;
 import com.gerryron.kooposservice.helper.ErrorDetailHelper;
 import com.gerryron.kooposservice.repository.OrderDetailRepository;
 import com.gerryron.kooposservice.repository.OrderRepository;
 import com.gerryron.kooposservice.repository.ProductRepository;
+import com.gerryron.kooposservice.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -29,22 +35,25 @@ import java.util.Set;
 public class OrderService {
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
-    private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
-    public OrderService(ProductRepository productRepository, OrderRepository orderRepository,
-                        OrderDetailRepository orderDetailRepository) {
-        this.productRepository = productRepository;
+    public OrderService(OrderRepository orderRepository, OrderDetailRepository orderDetailRepository,
+                        ProductRepository productRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDetailRepository;
+        this.productRepository = productRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
     public RestResponse<Object> createOrder(OrderRequest request) {
-
         final Set<OrderDetailsEntity> orderDetailsEntities = new HashSet<>();
         OrderEntity orderEntity = new OrderEntity();
+        System.out.println(getUserContext().getUsername());
+        orderEntity.setUser(getUserContext());
         orderEntity.setOrderNumber(request.getOrderNumber());
         orderEntity.setStatus(OrderStatus.PENDING);
         orderEntity.setCreatedDate(LocalDateTime.now());
@@ -82,5 +91,25 @@ public class OrderService {
         return RestResponse.builder()
                 .responseStatus(ApplicationCode.SUCCESS)
                 .build();
+    }
+
+    public RestResponse<Object> cancelOrder(CancelOrderRequest request) {
+        OrderEntity orderEntity = orderRepository.findByOrderNumber(request.getOrderNumber())
+                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.orderNotFound()));
+        orderEntity.setStatus(OrderStatus.CANCELED);
+        orderEntity.setDescription(request.getDescription());
+        orderEntity.setUpdatedDate(LocalDateTime.now());
+        orderRepository.save(orderEntity);
+
+        return RestResponse.builder()
+                .responseStatus(ApplicationCode.SUCCESS)
+                .build();
+    }
+
+    private UserEntity getUserContext() {
+        final AuthUserDetails authUserDetails = (AuthUserDetails) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        return userRepository.findByUsername(authUserDetails.getUsername())
+                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.userNotFound()));
     }
 }

@@ -17,11 +17,16 @@ public class OrderEntity {
     private String orderNumber;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+    private String description;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
     @OneToMany(mappedBy = "order")
     private Set<OrderDetailsEntity> orderDetailsEntities;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 
     public Integer getId() {
         return id;
@@ -45,6 +50,14 @@ public class OrderEntity {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public LocalDateTime getCreatedDate() {
@@ -71,4 +84,11 @@ public class OrderEntity {
         this.orderDetailsEntities = orderDetailsEntities;
     }
 
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
 }

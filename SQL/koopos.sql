@@ -68,11 +68,14 @@ create table if not exists products_categories (
 
 create table if not exists orders (
 	id int not null auto_increment,
+    user_id int not null,
     order_number varchar(50) unique not null,
     status varchar(10) not null default 'PENDING',
+    description varchar(100),
     created_date datetime default current_timestamp,
     updated_date datetime on update current_timestamp,
-    primary key (id)
+    primary key (id),
+    foreign key fk_users_orders (user_id) references users (id)
 );
 
 create table if not exists order_details (

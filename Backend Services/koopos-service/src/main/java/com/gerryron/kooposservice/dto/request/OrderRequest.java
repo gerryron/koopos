@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class OrderRequest {
 
-    @NotNull
+    @NotEmpty
     private String orderNumber;
     @NotNull
     @Valid

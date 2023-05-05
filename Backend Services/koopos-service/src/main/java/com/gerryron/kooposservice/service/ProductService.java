@@ -60,7 +60,8 @@ public class ProductService {
         ProductEntity savedProduct = productRepository.save(productEntity);
 
         for (String category : request.getCategories()) {
-            CategoryEntity categoryEntity = categoryRepository.findByName(category).orElseThrow();
+            CategoryEntity categoryEntity = categoryRepository.findByName(category)
+                    .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.categoryNameNotFound()));
 
             ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
             ProductCategoryEntity.CompositeKey compositeKey = new ProductCategoryEntity.CompositeKey();
@@ -130,12 +131,14 @@ public class ProductService {
         productCategoriesRepository.deleteAll(productEntity.getProductCategoryEntities());
 
         for (String category : request.getCategories()) {
-            CategoryEntity categoryEntity = categoryRepository.findByName(category).orElseThrow();
+            CategoryEntity categoryEntity = categoryRepository.findByName(category)
+                    .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.categoryNameNotFound()));
 
             ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
             ProductCategoryEntity.CompositeKey compositeKey = new ProductCategoryEntity.CompositeKey();
             compositeKey.setProductId(productEntity.getId());
             compositeKey.setCategoryId(categoryEntity.getId());
+            productCategoryEntity.setId(compositeKey);
             productCategoryEntity.setProduct(productEntity);
             productCategoryEntity.setCategory(categoryEntity);
             productCategoriesRepository.save(productCategoryEntity);

@@ -2,6 +2,7 @@ package com.gerryron.kooposservice.entity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -23,6 +24,9 @@ public class UserEntity {
 
     @OneToOne(mappedBy = "user")
     private UserDetailEntity userDetail;
+
+    @OneToMany(mappedBy = "user")
+    private Set<OrderEntity> orders;
 
     public Integer getId() {
         return id;
@@ -86,5 +90,13 @@ public class UserEntity {
 
     public void setUserDetail(UserDetailEntity userDetail) {
         this.userDetail = userDetail;
+    }
+
+    public Set<OrderEntity> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(Set<OrderEntity> orders) {
+        this.orders = orders;
     }
 }
