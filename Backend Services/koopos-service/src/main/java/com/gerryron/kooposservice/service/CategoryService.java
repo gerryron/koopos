@@ -108,7 +108,7 @@ public class CategoryService {
         CategoryEntity categoryEntity = categoryRepository.findByName(categoryName)
                 .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.categoryNameNotFound()));
 
-        productCategoriesRepository.deleteAll(categoryEntity.getProductCategories());
+        productCategoriesRepository.deleteAll(categoryEntity.getProductCategoryEntities());
         categoryRepository.delete(categoryEntity);
 
         log.info("Category with name: {} deleted successfully", categoryName);

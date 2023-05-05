@@ -6,14 +6,15 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "product")
+@Table(name = "products")
 public class ProductEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String barcode;
+    @Column(nullable = false)
     private String productName;
     @Column(columnDefinition = "text")
     private String description;
@@ -22,8 +23,9 @@ public class ProductEntity {
     private BigDecimal sellingPrice;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+
     @OneToMany(mappedBy = "product")
-    private Set<ProductCategories> productCategories;
+    private Set<ProductCategoryEntity> productCategoryEntities;
 
     public Integer getId() {
         return id;
@@ -97,12 +99,12 @@ public class ProductEntity {
         this.updatedDate = updatedDate;
     }
 
-    public Set<ProductCategories> getProductCategories() {
-        return productCategories;
+    public Set<ProductCategoryEntity> getProductCategoryEntities() {
+        return productCategoryEntities;
     }
 
-    public void setProductCategories(Set<ProductCategories> productCategories) {
-        this.productCategories = productCategories;
+    public void setProductCategoryEntities(Set<ProductCategoryEntity> productCategoryEntities) {
+        this.productCategoryEntities = productCategoryEntities;
     }
 
     public BigDecimal getProfit() {

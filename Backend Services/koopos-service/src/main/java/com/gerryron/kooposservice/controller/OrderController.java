@@ -1,8 +1,8 @@
 package com.gerryron.kooposservice.controller;
 
 import com.gerryron.kooposservice.dto.RestResponse;
-import com.gerryron.kooposservice.dto.request.TransactionRequest;
-import com.gerryron.kooposservice.service.TransactionService;
+import com.gerryron.kooposservice.dto.request.OrderRequest;
+import com.gerryron.kooposservice.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,19 +13,19 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/transaction")
-public class TransactionController {
+@RequestMapping("/order")
+public class OrderController {
 
-    private final TransactionService transactionService;
+    private final OrderService orderService;
 
-    public TransactionController(TransactionService transactionService) {
-        this.transactionService = transactionService;
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
     }
 
     @PostMapping
-    public ResponseEntity<RestResponse<Object>> postTransaction(@RequestBody @Valid TransactionRequest request) {
+    public ResponseEntity<RestResponse<Object>> postOrder(@RequestBody @Valid OrderRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(transactionService.createTransaction(request));
+                .body(orderService.createOrder(request));
     }
 
 }

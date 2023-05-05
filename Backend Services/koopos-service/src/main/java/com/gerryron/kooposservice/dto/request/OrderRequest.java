@@ -7,19 +7,20 @@ import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.util.Set;
 
-public class TransactionRequest {
+public class OrderRequest {
 
     @NotNull
-    private String transactionNumber;
+    private String orderNumber;
     @NotNull
     @Valid
     private Set<ProductPurchased> productsPurchased;
-    public String getTransactionNumber() {
-        return transactionNumber;
+
+    public String getOrderNumber() {
+        return orderNumber;
     }
 
-    public void setTransactionNumber(String transactionNumber) {
-        this.transactionNumber = transactionNumber;
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
     }
 
     public Set<ProductPurchased> getProductsPurchased() {

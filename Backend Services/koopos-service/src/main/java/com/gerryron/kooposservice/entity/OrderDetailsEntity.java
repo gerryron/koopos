@@ -5,8 +5,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "transaction_detail")
-public class TransactionDetailEntity {
+@Table(name = "order_details")
+public class OrderDetailsEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,7 +16,6 @@ public class TransactionDetailEntity {
     private Integer quantity;
     @Column(nullable = false)
     private BigDecimal price;
-    @Column(nullable = false)
     private BigDecimal discount;
     @Column(nullable = false)
     private BigDecimal profit;
@@ -24,8 +23,8 @@ public class TransactionDetailEntity {
     private LocalDateTime updatedDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transaction_id", nullable = false)
-    private TransactionEntity transaction;
+    @JoinColumn(name = "order_id")
+    private OrderEntity order;
 
     public Integer getId() {
         return id;
@@ -91,11 +90,11 @@ public class TransactionDetailEntity {
         this.updatedDate = updatedDate;
     }
 
-    public TransactionEntity getTransaction() {
-        return transaction;
+    public OrderEntity getOrder() {
+        return order;
     }
 
-    public void setTransaction(TransactionEntity transaction) {
-        this.transaction = transaction;
+    public void setOrder(OrderEntity order) {
+        this.order = order;
     }
 }

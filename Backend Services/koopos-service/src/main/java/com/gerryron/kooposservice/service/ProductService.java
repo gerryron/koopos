@@ -5,7 +5,7 @@ import com.gerryron.kooposservice.dto.RestResponse;
 import com.gerryron.kooposservice.dto.request.ProductRequest;
 import com.gerryron.kooposservice.dto.response.ProductResponse;
 import com.gerryron.kooposservice.entity.CategoryEntity;
-import com.gerryron.kooposservice.entity.ProductCategories;
+import com.gerryron.kooposservice.entity.ProductCategoryEntity;
 import com.gerryron.kooposservice.entity.ProductEntity;
 import com.gerryron.kooposservice.enums.ApplicationCode;
 import com.gerryron.kooposservice.exception.ConflictException;
@@ -62,14 +62,14 @@ public class ProductService {
         for (String category : request.getCategories()) {
             CategoryEntity categoryEntity = categoryRepository.findByName(category).orElseThrow();
 
-            ProductCategories productCategories = new ProductCategories();
-            ProductCategories.CompositeKey compositeKey = new ProductCategories.CompositeKey();
+            ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
+            ProductCategoryEntity.CompositeKey compositeKey = new ProductCategoryEntity.CompositeKey();
             compositeKey.setProductId(savedProduct.getId());
             compositeKey.setCategoryId(categoryEntity.getId());
-            productCategories.setId(compositeKey);
-            productCategories.setProduct(savedProduct);
-            productCategories.setCategory(categoryEntity);
-            productCategoriesRepository.save(productCategories);
+            productCategoryEntity.setId(compositeKey);
+            productCategoryEntity.setProduct(savedProduct);
+            productCategoryEntity.setCategory(categoryEntity);
+            productCategoriesRepository.save(productCategoryEntity);
         }
 
         log.info("Product with barcode: {} created successfully", request.getBarcode());
@@ -127,18 +127,18 @@ public class ProductService {
         productEntity.setBuyingPrice(request.getBuyingPrice());
         productEntity.setSellingPrice(request.getSellingPrice());
         productEntity.setUpdatedDate(LocalDateTime.now());
-        productCategoriesRepository.deleteAll(productEntity.getProductCategories());
+        productCategoriesRepository.deleteAll(productEntity.getProductCategoryEntities());
 
         for (String category : request.getCategories()) {
             CategoryEntity categoryEntity = categoryRepository.findByName(category).orElseThrow();
 
-            ProductCategories productCategories = new ProductCategories();
-            ProductCategories.CompositeKey compositeKey = new ProductCategories.CompositeKey();
+            ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
+            ProductCategoryEntity.CompositeKey compositeKey = new ProductCategoryEntity.CompositeKey();
             compositeKey.setProductId(productEntity.getId());
             compositeKey.setCategoryId(categoryEntity.getId());
-            productCategories.setProduct(productEntity);
-            productCategories.setCategory(categoryEntity);
-            productCategoriesRepository.save(productCategories);
+            productCategoryEntity.setProduct(productEntity);
+            productCategoryEntity.setCategory(categoryEntity);
+            productCategoriesRepository.save(productCategoryEntity);
         }
         productRepository.save(productEntity);
 
@@ -153,7 +153,7 @@ public class ProductService {
         ProductEntity productEntity = productRepository.findByBarcode(barcode)
                 .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.barcodeNotFound()));
 
-        productCategoriesRepository.deleteAll(productEntity.getProductCategories());
+        productCategoriesRepository.deleteAll(productEntity.getProductCategoryEntities());
         productRepository.delete(productEntity);
 
         log.info("Product with barcode: {} deleted successfully", barcode);

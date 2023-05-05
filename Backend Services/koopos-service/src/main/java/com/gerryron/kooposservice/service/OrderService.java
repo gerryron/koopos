@@ -1,0 +1,86 @@
+package com.gerryron.kooposservice.service;
+
+import com.gerryron.kooposservice.dto.ErrorDetail;
+import com.gerryron.kooposservice.dto.RestResponse;
+import com.gerryron.kooposservice.dto.request.OrderRequest;
+import com.gerryron.kooposservice.entity.OrderDetailsEntity;
+import com.gerryron.kooposservice.entity.OrderEntity;
+import com.gerryron.kooposservice.entity.ProductEntity;
+import com.gerryron.kooposservice.enums.ApplicationCode;
+import com.gerryron.kooposservice.enums.OrderStatus;
+import com.gerryron.kooposservice.exception.BadRequestException;
+import com.gerryron.kooposservice.helper.ErrorDetailHelper;
+import com.gerryron.kooposservice.repository.OrderDetailRepository;
+import com.gerryron.kooposservice.repository.OrderRepository;
+import com.gerryron.kooposservice.repository.ProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Service
+public class OrderService {
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
+
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
+
+    public OrderService(ProductRepository productRepository, OrderRepository orderRepository,
+                        OrderDetailRepository orderDetailRepository) {
+        this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
+        this.orderDetailRepository = orderDetailRepository;
+    }
+
+    @Transactional
+    public RestResponse<Object> createOrder(OrderRequest request) {
+
+        final Set<OrderDetailsEntity> orderDetailsEntities = new HashSet<>();
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setOrderNumber(request.getOrderNumber());
+        orderEntity.setStatus(OrderStatus.PENDING);
+        orderEntity.setCreatedDate(LocalDateTime.now());
+        final OrderEntity savedTransaction = orderRepository.save(orderEntity);
+
+        List<ErrorDetail> outOfStockProductError = new ArrayList<>();
+        for (OrderRequest.ProductPurchased productPurchased : request.getProductsPurchased()) {
+            ProductEntity productEntity = productRepository.findByBarcode(productPurchased.getBarcode())
+                    .orElseThrow(() -> new BadRequestException(ErrorDetailHelper.barcodeNotFound()));
+            if (productEntity.getQuantity() < productPurchased.getQuantity()) {
+                outOfStockProductError.add(ErrorDetailHelper
+                        .invalidTransactionProductQuantity(productEntity.getProductName()));
+            }
+            if (!outOfStockProductError.isEmpty()) continue;
+
+            OrderDetailsEntity orderDetailsEntity = new OrderDetailsEntity();
+            orderDetailsEntity.setOrder(savedTransaction);
+            orderDetailsEntity.setProductId(productEntity.getId());
+            orderDetailsEntity.setQuantity(productPurchased.getQuantity());
+            orderDetailsEntity.setPrice(productEntity.getSellingPrice()
+                    .multiply(new BigDecimal(productPurchased.getQuantity())));
+            orderDetailsEntity.setDiscount(productPurchased.getDiscount());
+            orderDetailsEntity.setProfit(productEntity.getProfit().multiply(new BigDecimal(productPurchased.getQuantity()))
+                    .subtract(productPurchased.getDiscount()));
+            orderDetailsEntity.setCreatedDate(LocalDateTime.now());
+            orderDetailsEntities.add(orderDetailsEntity);
+        }
+
+        if (!outOfStockProductError.isEmpty()) {
+            throw new BadRequestException(outOfStockProductError);
+        }
+        orderDetailRepository.saveAll(orderDetailsEntities);
+
+        log.info("Transaction with transaction number: {} created successfully", request.getOrderNumber());
+        return RestResponse.builder()
+                .responseStatus(ApplicationCode.SUCCESS)
+                .build();
+    }
+}

@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_detail")
+@Table(name = "user_details")
 public class UserDetailEntity {
 
     @Id
@@ -20,7 +20,7 @@ public class UserDetailEntity {
     private LocalDateTime updatedDate;
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @PrimaryKeyJoinColumn(name = "id", referencedColumnName = "id")
     private UserEntity user;
 
     public Integer getId() {

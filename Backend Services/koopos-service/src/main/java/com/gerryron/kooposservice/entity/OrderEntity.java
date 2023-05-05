@@ -1,27 +1,27 @@
 package com.gerryron.kooposservice.entity;
 
-import com.gerryron.kooposservice.enums.TransactionStatus;
+import com.gerryron.kooposservice.enums.OrderStatus;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "transaction")
-public class TransactionEntity {
+@Table(name = "orders")
+public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(unique = true, nullable = false)
-    private String transactionNumber;
+    @Column(nullable = false, unique = true)
+    private String orderNumber;
     @Enumerated(EnumType.STRING)
-    private TransactionStatus status;
+    private OrderStatus status;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
-    @OneToMany(mappedBy = "transaction")
-    private Set<TransactionDetailEntity> transactionDetails;
+    @OneToMany(mappedBy = "order")
+    private Set<OrderDetailsEntity> orderDetailsEntities;
 
     public Integer getId() {
         return id;
@@ -31,19 +31,19 @@ public class TransactionEntity {
         this.id = id;
     }
 
-    public String getTransactionNumber() {
-        return transactionNumber;
+    public String getOrderNumber() {
+        return orderNumber;
     }
 
-    public void setTransactionNumber(String transactionNumber) {
-        this.transactionNumber = transactionNumber;
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
     }
 
-    public TransactionStatus getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(TransactionStatus status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 
@@ -63,12 +63,12 @@ public class TransactionEntity {
         this.updatedDate = updatedDate;
     }
 
-    public Set<TransactionDetailEntity> getTransactionDetails() {
-        return transactionDetails;
+    public Set<OrderDetailsEntity> getOrderDetailsEntities() {
+        return orderDetailsEntities;
     }
 
-    public void setTransactionDetails(Set<TransactionDetailEntity> transactionDetails) {
-        this.transactionDetails = transactionDetails;
+    public void setOrderDetailsEntities(Set<OrderDetailsEntity> orderDetailsEntities) {
+        this.orderDetailsEntities = orderDetailsEntities;
     }
 
 }

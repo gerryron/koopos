@@ -1,6 +1,6 @@
 package com.gerryron.kooposservice.enums;
 
-public enum TransactionStatus {
+public enum OrderStatus {
     PENDING,
     PURCHASED,
     CANCELED,

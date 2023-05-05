@@ -19,7 +19,7 @@ public class MapHelper {
         productResponse.setSellingPrice(productEntity.getSellingPrice());
         productResponse.setCreatedDate(productEntity.getCreatedDate());
         productResponse.setUpdatedDate(productEntity.getUpdatedDate());
-        productResponse.setCategories(productEntity.getProductCategories()
+        productResponse.setCategories(productEntity.getProductCategoryEntities()
                 .stream()
                 .map(productCategory -> productCategory.getCategory().getName())
                 .collect(Collectors.toSet()));
@@ -32,7 +32,7 @@ public class MapHelper {
         categoryResponse.setCategoryName(categoryEntity.getName());
         categoryResponse.setCreatedDate(categoryEntity.getCreatedDate());
         categoryResponse.setUpdatedDate(categoryEntity.getUpdatedDate());
-        categoryResponse.setProducts(categoryEntity.getProductCategories()
+        categoryResponse.setProducts(categoryEntity.getProductCategoryEntities()
                 .stream()
                 .map(productCategory -> {
                     ProductEntity product = productCategory.getProduct();

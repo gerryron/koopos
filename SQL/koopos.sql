@@ -1,7 +1,8 @@
-create database if not exists koopos;
+drop database if exists koopos;
+create database koopos;
 use koopos;
 
-create table if not exists role (
+create table if not exists roles (
 	id int not null auto_increment,
     role_name varchar(10) unique not null,
     created_date datetime default current_timestamp,
@@ -9,10 +10,10 @@ create table if not exists role (
 	primary key (id)
 );
 
-insert into role (id, role_name) values (1, 'OWNER'); 
-insert into role (id, role_name) values (2, 'STAFF'); 
+insert into roles (id, role_name) values (1, 'OWNER'); 
+insert into roles (id, role_name) values (2, 'STAFF'); 
 
-create table if not exists user (
+create table if not exists users (
 	id int not null auto_increment,
     username varchar(25) unique not null,
     email varchar(100) unique not null,
@@ -21,27 +22,22 @@ create table if not exists user (
     created_date datetime default current_timestamp,
     updated_date datetime on update current_timestamp,
     primary key (id),
-    constraint constr_user_role_fk 
-		foreign key role_fk (role_id) REFERENCES role (id)
-        on delete cascade on update cascade
+	foreign key fk_roles_users (role_id) REFERENCES roles (id)
 );
 
-create table if not exists user_detail (
+create table if not exists user_details (
 	id int not null auto_increment,
-    user_id int not null,
     first_name varchar(50) not null,
-    last_name varchar(50) default null,
+    last_name varchar(50),
     phone_number varchar(20) not null,
-    address varchar(100) default null,
+    address varchar(255),
     created_date datetime default current_timestamp,
     updated_date datetime on update current_timestamp,
     primary key (id),
-    constraint constr_userDetail_user_fk 
-		foreign key user_fk (user_id) REFERENCES user (id)
-        on delete cascade on update cascade
+	foreign key fk_users_userDetails (id) REFERENCES users (id)
 );
 
-create table if not exists product (
+create table if not exists products (
 	id int not null auto_increment,
     barcode varchar(255) unique not null,
     product_name varchar(100) not null,
@@ -54,7 +50,7 @@ create table if not exists product (
     primary key (id)
 );
 
-create table if not exists category (
+create table if not exists categories (
 	id int not null auto_increment,
     name varchar(100) unique not null,
     created_date datetime default current_timestamp,
@@ -62,18 +58,26 @@ create table if not exists category (
     primary key (id)
 );
 
-create table if not exists transaction (
+create table if not exists products_categories ( 
+	product_id int not null,
+    category_id int not null,
+    primary key (product_id, category_id),
+    foreign key fk_products_productCategories (product_id) REFERENCES products (id),
+	foreign key fk_categories_productCategories (category_id) REFERENCES categories (id)
+);
+
+create table if not exists orders (
 	id int not null auto_increment,
-    transaction_number varchar(50) unique not null,
+    order_number varchar(50) unique not null,
     status varchar(10) not null default 'PENDING',
     created_date datetime default current_timestamp,
     updated_date datetime on update current_timestamp,
     primary key (id)
 );
 
-create table if not exists transaction_detail (
+create table if not exists order_details (
 	id int not null auto_increment,
-    transaction_id int not null,
+    order_id int not null,
     product_id int not null,
     quantity int not null,
     price decimal(21,2) not null,
@@ -82,22 +86,6 @@ create table if not exists transaction_detail (
     created_date datetime default current_timestamp,
     updated_date datetime on update current_timestamp,
     primary key (id),
-    constraint constr_transactionDetail_transaction_fk 
-		foreign key transaction_fk (transaction_id) REFERENCES transaction (id)
-        on delete cascade on update cascade,
-	constraint constr_orderDetail_product_fk 
-		foreign key transaction_fk (product_id) REFERENCES product (id)
-        on delete cascade on update cascade
-);
-
-create table if not exists product_categories ( 
-	product_id int not null,
-    category_id int not null,
-    primary key (product_id, category_id),
-    constraint constr_productCategories_product_fk 
-		foreign key product_fk (product_id) REFERENCES product (id)
-        on delete cascade on update cascade,
-    constraint constr_productCategories_category_fk 
-		foreign key category_fk (category_id) REFERENCES category (id)
-        on delete cascade on update cascade
+	foreign key fk_orders_orderDetails (order_id) REFERENCES orders (id),
+	foreign key fk_products_orderDetails (product_id) REFERENCES products (id)
 );

@@ -4,8 +4,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "product_categories")
-public class ProductCategories {
+@Table(name = "products_categories")
+public class ProductCategoryEntity {
 
     @EmbeddedId
     private CompositeKey id;

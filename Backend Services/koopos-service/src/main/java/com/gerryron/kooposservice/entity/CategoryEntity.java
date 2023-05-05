@@ -6,19 +6,19 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "category")
+@Table(name = "categories")
 public class CategoryEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    private Set<ProductCategories> productCategories;
+    @OneToMany(mappedBy = "category")
+    private Set<ProductCategoryEntity> productCategoryEntities;
 
     public Integer getId() {
         return id;
@@ -52,11 +52,11 @@ public class CategoryEntity {
         this.updatedDate = updatedDate;
     }
 
-    public Set<ProductCategories> getProductCategories() {
-        return productCategories;
+    public Set<ProductCategoryEntity> getProductCategoryEntities() {
+        return productCategoryEntities;
     }
 
-    public void setProductCategories(Set<ProductCategories> productCategories) {
-        this.productCategories = productCategories;
+    public void setProductCategoryEntities(Set<ProductCategoryEntity> productCategoryEntities) {
+        this.productCategoryEntities = productCategoryEntities;
     }
 }
