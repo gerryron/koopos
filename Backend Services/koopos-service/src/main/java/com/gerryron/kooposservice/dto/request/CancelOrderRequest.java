@@ -1,27 +1,16 @@
 package com.gerryron.kooposservice.dto.request;
 
-import javax.validation.constraints.NotEmpty;
+import lombok.Getter;
+import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
+
+@Getter
+@Setter
 public class CancelOrderRequest {
 
-    @NotEmpty
+    @NotBlank
     private String orderNumber;
 
     private String description;
-
-    public String getOrderNumber() {
-        return orderNumber;
-    }
-
-    public void setOrderNumber(String orderNumber) {
-        this.orderNumber = orderNumber;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 }

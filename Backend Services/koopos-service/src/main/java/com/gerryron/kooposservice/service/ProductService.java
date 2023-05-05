@@ -15,8 +15,8 @@ import com.gerryron.kooposservice.helper.MapHelper;
 import com.gerryron.kooposservice.repository.CategoryRepository;
 import com.gerryron.kooposservice.repository.ProductCategoriesRepository;
 import com.gerryron.kooposservice.repository.ProductRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -28,19 +28,13 @@ import java.util.stream.Collectors;
 
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class ProductService {
-    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ProductCategoriesRepository productCategoriesRepository;
-
-    public ProductService(CategoryRepository categoryRepository, ProductRepository productRepository,
-                          ProductCategoriesRepository productCategoriesRepository) {
-        this.categoryRepository = categoryRepository;
-        this.productRepository = productRepository;
-        this.productCategoriesRepository = productCategoriesRepository;
-    }
 
     @Transactional
     public RestResponse<Object> createProduct(ProductRequest request) {

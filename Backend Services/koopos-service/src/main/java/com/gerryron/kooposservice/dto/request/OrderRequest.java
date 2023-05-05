@@ -1,36 +1,29 @@
 package com.gerryron.kooposservice.dto.request;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.util.Set;
 
+@Getter
+@Setter
 public class OrderRequest {
 
-    @NotEmpty
+    @NotBlank
     private String orderNumber;
+
     @NotNull
     @Valid
     private Set<ProductPurchased> productsPurchased;
 
-    public String getOrderNumber() {
-        return orderNumber;
-    }
-
-    public void setOrderNumber(String orderNumber) {
-        this.orderNumber = orderNumber;
-    }
-
-    public Set<ProductPurchased> getProductsPurchased() {
-        return productsPurchased;
-    }
-
-    public void setProductsPurchased(Set<ProductPurchased> productsPurchased) {
-        this.productsPurchased = productsPurchased;
-    }
-
+    @Getter
+    @Setter
     public static class ProductPurchased {
 
         @NotEmpty
@@ -41,29 +34,5 @@ public class OrderRequest {
 
         @NotNull
         private BigDecimal discount;
-
-        public String getBarcode() {
-            return barcode;
-        }
-
-        public void setBarcode(String barcode) {
-            this.barcode = barcode;
-        }
-
-        public Integer getQuantity() {
-            return quantity;
-        }
-
-        public void setQuantity(Integer quantity) {
-            this.quantity = quantity;
-        }
-
-        public BigDecimal getDiscount() {
-            return discount;
-        }
-
-        public void setDiscount(BigDecimal discount) {
-            this.discount = discount;
-        }
     }
 }

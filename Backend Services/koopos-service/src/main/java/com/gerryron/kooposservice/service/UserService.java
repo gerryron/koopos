@@ -15,8 +15,8 @@ import com.gerryron.kooposservice.helper.ErrorDetailHelper;
 import com.gerryron.kooposservice.repository.RoleRepository;
 import com.gerryron.kooposservice.repository.UserDetailRepository;
 import com.gerryron.kooposservice.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,8 +27,9 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final UserDetailRepository userDetailRepository;
@@ -37,17 +38,6 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-
-    public UserService(UserRepository userRepository, UserDetailRepository userDetailRepository,
-                       RoleRepository roleRepository, AuthenticationManager authenticationManager,
-                       PasswordEncoder passwordEncoder, JwtService jwtService) {
-        this.userRepository = userRepository;
-        this.userDetailRepository = userDetailRepository;
-        this.roleRepository = roleRepository;
-        this.authenticationManager = authenticationManager;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-    }
 
     @Transactional
     public RestResponse<Object> createUser(SignUpRequest request) {
@@ -100,13 +90,12 @@ public class UserService {
             throw new AuthenticationException(e.getMessage());
         }
 
-        SignInResponse signInResponse = new SignInResponse();
-        signInResponse.setAccessToken(jwtService.generateToken(userEntity.getUsername()));
-
         log.info("User with username: {} login successfully", request.getUsername());
         return RestResponse.<SignInResponse>builder()
                 .responseStatus(ApplicationCode.SUCCESS)
-                .data(signInResponse)
+                .data(SignInResponse.builder()
+                        .accessToken(jwtService.generateToken(userEntity.getUsername()))
+                        .build())
                 .build();
     }
 }

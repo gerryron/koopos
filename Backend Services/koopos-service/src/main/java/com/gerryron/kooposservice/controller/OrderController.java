@@ -4,6 +4,7 @@ import com.gerryron.kooposservice.dto.RestResponse;
 import com.gerryron.kooposservice.dto.request.CancelOrderRequest;
 import com.gerryron.kooposservice.dto.request.OrderRequest;
 import com.gerryron.kooposservice.service.OrderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,13 +16,11 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/order")
+@RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class OrderController {
 
     private final OrderService orderService;
-
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
 
     @PostMapping
     public ResponseEntity<RestResponse<Object>> postOrder(@RequestBody @Valid OrderRequest request) {

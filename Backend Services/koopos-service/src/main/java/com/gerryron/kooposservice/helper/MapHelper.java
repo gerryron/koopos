@@ -10,39 +10,37 @@ import java.util.stream.Collectors;
 public class MapHelper {
 
     public static ProductResponse productEntityToResponse(ProductEntity productEntity) {
-        ProductResponse productResponse = new ProductResponse();
-        productResponse.setProductName(productEntity.getProductName());
-        productResponse.setBarcode(productEntity.getBarcode());
-        productResponse.setDescription(productEntity.getDescription());
-        productResponse.setQuantity(productEntity.getQuantity());
-        productResponse.setBuyingPrice(productEntity.getBuyingPrice());
-        productResponse.setSellingPrice(productEntity.getSellingPrice());
-        productResponse.setCreatedDate(productEntity.getCreatedDate());
-        productResponse.setUpdatedDate(productEntity.getUpdatedDate());
-        productResponse.setCategories(productEntity.getProductCategoryEntities()
-                .stream()
-                .map(productCategory -> productCategory.getCategory().getName())
-                .collect(Collectors.toSet()));
-
-        return productResponse;
+        return ProductResponse.builder()
+                .productName(productEntity.getProductName())
+                .barcode(productEntity.getBarcode())
+                .description(productEntity.getDescription())
+                .quantity(productEntity.getQuantity())
+                .buyingPrice(productEntity.getBuyingPrice())
+                .sellingPrice(productEntity.getSellingPrice())
+                .createdDate(productEntity.getCreatedDate())
+                .updatedDate(productEntity.getUpdatedDate())
+                .categories(productEntity.getProductCategoryEntities()
+                        .stream()
+                        .map(productCategory -> productCategory.getCategory().getName())
+                        .collect(Collectors.toSet()))
+                .build();
     }
 
     public static CategoryResponse categoryEntityToResponse(CategoryEntity categoryEntity) {
-        CategoryResponse categoryResponse = new CategoryResponse();
-        categoryResponse.setCategoryName(categoryEntity.getName());
-        categoryResponse.setCreatedDate(categoryEntity.getCreatedDate());
-        categoryResponse.setUpdatedDate(categoryEntity.getUpdatedDate());
-        categoryResponse.setProducts(categoryEntity.getProductCategoryEntities()
-                .stream()
-                .map(productCategory -> {
-                    ProductEntity product = productCategory.getProduct();
-                    return CategoryResponse.Product.builder()
-                            .productName(product.getProductName())
-                            .barcode(product.getBarcode())
-                            .build();
-                })
-                .collect(Collectors.toSet()));
-
-        return categoryResponse;
+        return CategoryResponse.builder()
+                .categoryName(categoryEntity.getName())
+                .createdDate(categoryEntity.getCreatedDate())
+                .updatedDate(categoryEntity.getUpdatedDate())
+                .products(categoryEntity.getProductCategoryEntities()
+                        .stream()
+                        .map(productCategory -> {
+                            ProductEntity product = productCategory.getProduct();
+                            return CategoryResponse.Product.builder()
+                                    .productName(product.getProductName())
+                                    .barcode(product.getBarcode())
+                                    .build();
+                        })
+                        .collect(Collectors.toSet()))
+                .build();
     }
 }

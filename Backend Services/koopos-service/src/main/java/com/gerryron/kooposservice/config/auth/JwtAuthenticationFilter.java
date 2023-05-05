@@ -1,5 +1,6 @@
 package com.gerryron.kooposservice.config.auth;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,15 +16,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final AuthUserDetailsService userDetailsService;
-
-    public JwtAuthenticationFilter(JwtService jwtService, AuthUserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
-    }
 
     @Override
     protected void doFilterInternal(

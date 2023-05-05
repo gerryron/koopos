@@ -12,8 +12,8 @@ import com.gerryron.kooposservice.helper.ErrorDetailHelper;
 import com.gerryron.kooposservice.helper.MapHelper;
 import com.gerryron.kooposservice.repository.CategoryRepository;
 import com.gerryron.kooposservice.repository.ProductCategoriesRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -24,16 +24,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class CategoryService {
-    private static final Logger log = LoggerFactory.getLogger(CategoryService.class);
 
     private final CategoryRepository categoryRepository;
     private final ProductCategoriesRepository productCategoriesRepository;
-
-    public CategoryService(CategoryRepository categoryRepository, ProductCategoriesRepository productCategoriesRepository) {
-        this.categoryRepository = categoryRepository;
-        this.productCategoriesRepository = productCategoriesRepository;
-    }
 
     public RestResponse<Object> createCategory(CategoryRequest request) {
         if (categoryRepository.existsByName(request.getCategoryName())) {

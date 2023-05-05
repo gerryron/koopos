@@ -1,6 +1,7 @@
 package com.gerryron.kooposservice.config;
 
 import com.gerryron.kooposservice.config.auth.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -12,15 +13,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
-
-    public WebSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, AuthenticationProvider authenticationProvider) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-        this.authenticationProvider = authenticationProvider;
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

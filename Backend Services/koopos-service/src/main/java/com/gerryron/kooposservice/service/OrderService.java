@@ -18,8 +18,8 @@ import com.gerryron.kooposservice.repository.OrderDetailRepository;
 import com.gerryron.kooposservice.repository.OrderRepository;
 import com.gerryron.kooposservice.repository.ProductRepository;
 import com.gerryron.kooposservice.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -32,21 +32,14 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class OrderService {
-    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-
-    public OrderService(OrderRepository orderRepository, OrderDetailRepository orderDetailRepository,
-                        ProductRepository productRepository, UserRepository userRepository) {
-        this.orderRepository = orderRepository;
-        this.orderDetailRepository = orderDetailRepository;
-        this.productRepository = productRepository;
-        this.userRepository = userRepository;
-    }
 
     @Transactional
     public RestResponse<Object> createOrder(OrderRequest request) {

@@ -5,6 +5,7 @@ import com.gerryron.kooposservice.dto.RestResponse;
 import com.gerryron.kooposservice.dto.request.ProductRequest;
 import com.gerryron.kooposservice.dto.response.ProductResponse;
 import com.gerryron.kooposservice.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -16,13 +17,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/product")
+@RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class ProductController {
 
     private final ProductService productService;
-
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
 
     @PostMapping
     public ResponseEntity<RestResponse<Object>> postProduct(@RequestBody @Valid ProductRequest request) {
