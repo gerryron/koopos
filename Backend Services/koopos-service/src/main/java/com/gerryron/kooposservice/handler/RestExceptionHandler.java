@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@SuppressWarnings("unused")
 public class RestExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
 
@@ -36,7 +37,7 @@ public class RestExceptionHandler {
         log.warn("BadRequestException occurred:: Method= {} URL= {}  Code= {} Message= {}",
                 request.getMethod(), request.getRequestURL(), e.getCode(), e.getMessage());
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(RestResponse.builder()
                         .responseStatus(e.getCode(), e.getMessage())
                         .errorDetails(e.getErrorDetails())
@@ -72,7 +73,7 @@ public class RestExceptionHandler {
         log.warn("KooposException occurred:: Method= {} URL= {} Code= {} Message= {}",
                 request.getMethod(), request.getRequestURL(), e.getCode(), e.getMessage());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(RestResponse.builder()
                         .responseStatus(e.getCode(), e.getMessage())
                         .build());
@@ -87,8 +88,7 @@ public class RestExceptionHandler {
 
         List<ErrorDetail> errorDetails = e.getFieldErrors().stream()
                 .map(error -> ErrorDetail.builder()
-                        .object(error.getObjectName())
-                        .field(error.getField())
+                        .property(error.getField())
                         .message(error.getDefaultMessage())
                         .build()
                 ).collect(Collectors.toList());

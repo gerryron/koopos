@@ -7,76 +7,43 @@ import java.util.List;
 
 public class ErrorDetailHelper {
 
-    public static List<ErrorDetail> barcodeAlreadyExists() {
-        return Collections.singletonList(ErrorDetail.builder()
-                .object(String.class.getSimpleName())
-                .field("Barcode")
-                .message("Product already exists")
-                .build());
-    }
-
-    public static List<ErrorDetail> barcodeNotFound() {
-        return Collections.singletonList(ErrorDetail.builder()
-                .object(String.class.getSimpleName())
-                .field("Barcode")
-                .message("Barcode not found")
-                .build());
-    }
-
-    public static List<ErrorDetail> categoryNameAlreadyExists() {
-        return Collections.singletonList(ErrorDetail.builder()
-                .object(String.class.getSimpleName())
-                .field("categoryName")
-                .message("Category already exists")
-                .build());
-    }
-
-    public static List<ErrorDetail> categoryNameNotFound() {
-        return Collections.singletonList(ErrorDetail.builder()
-                .object(String.class.getSimpleName())
-                .field("categoryName")
-                .message("Category name not found")
-                .build());
-    }
-
-    public static List<ErrorDetail> userAlreadyExists() {
-        return Collections.singletonList(ErrorDetail.builder()
-                .object(String.class.getSimpleName())
-                .field("username or email")
-                .message("Username or email already exists")
-                .build());
-    }
-
-    public static List<ErrorDetail> userNotFound() {
-        return Collections.singletonList(ErrorDetail.builder()
-                .object(String.class.getSimpleName())
-                .field("username or email")
-                .message("Username or email not found")
-                .build());
-    }
-
-    public static List<ErrorDetail> userInvalidRole() {
-        return Collections.singletonList(ErrorDetail.builder()
-                .object(String.class.getSimpleName())
-                .field("role")
-                .message("User has an invalid role")
-                .build());
-    }
-
-    public static ErrorDetail invalidTransactionProductQuantity(String productName) {
+    public static ErrorDetail notFound(String property) {
         return ErrorDetail.builder()
-                .object(String.class.getSimpleName())
-                .field("productsPurchased[].quantity")
-                .message("the quantity of " + productName + " products requested in out of stock")
+                .property(property)
+                .message(property + " not found")
                 .build();
     }
 
-    public static List<ErrorDetail> orderNotFound() {
-        return Collections.singletonList(ErrorDetail.builder()
-                .object(String.class.getSimpleName())
-                .field("orderNumber")
-                .message("orderNumber not found")
-                .build());
+    public static List<ErrorDetail> notFoundSingletonList(String property) {
+        return Collections.singletonList(notFound(property));
     }
 
+    public static ErrorDetail alreadyExists(String property) {
+        return ErrorDetail.builder()
+                .property(property)
+                .message(property + " already exists")
+                .build();
+    }
+
+    public static List<ErrorDetail> alreadyExistsSingletonList(String property) {
+        return Collections.singletonList(alreadyExists(property));
+    }
+
+    public static ErrorDetail invalidInput(String property) {
+        return ErrorDetail.builder()
+                .property(property)
+                .message(property + " invalid input")
+                .build();
+    }
+
+    public static List<ErrorDetail> invalidInputSingletonList(String property) {
+        return Collections.singletonList(invalidInput(property));
+    }
+
+    public static ErrorDetail productOutOfStock(String productName) {
+        return ErrorDetail.builder()
+                .property("productsPurchased[].quantity")
+                .message("the quantity of " + productName + " products requested in out of stock")
+                .build();
+    }
 }

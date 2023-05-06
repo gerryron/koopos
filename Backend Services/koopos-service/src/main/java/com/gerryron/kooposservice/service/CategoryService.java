@@ -34,7 +34,7 @@ public class CategoryService {
     public RestResponse<Object> createCategory(CategoryRequest request) {
         if (categoryRepository.existsByName(request.getCategoryName())) {
             log.warn("Category with name: {} already exists", request.getCategoryName());
-            throw new ConflictException(ErrorDetailHelper.categoryNameAlreadyExists());
+            throw new ConflictException(ErrorDetailHelper.alreadyExistsSingletonList("categoryName"));
         }
 
         CategoryEntity categoryEntity = new CategoryEntity();
@@ -71,7 +71,8 @@ public class CategoryService {
     @Transactional
     public RestResponse<CategoryResponse> findCategory(String categoryName) {
         CategoryEntity categoryEntity = categoryRepository.findByName(categoryName)
-                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.categoryNameNotFound()));
+                .orElseThrow(() -> new NotFoundException(
+                        ErrorDetailHelper.notFoundSingletonList("categoryName")));
 
         return RestResponse.<CategoryResponse>builder()
                 .responseStatus(ApplicationCode.SUCCESS)
@@ -81,12 +82,13 @@ public class CategoryService {
 
     public RestResponse<Object> updateCategory(String categoryName, CategoryRequest request) {
         CategoryEntity categoryEntity = categoryRepository.findByName(categoryName)
-                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.categoryNameNotFound()));
+                .orElseThrow(() -> new NotFoundException(
+                        ErrorDetailHelper.notFoundSingletonList("categoryName")));
         // validate if category name wants to be replaced
         if (!categoryName.equalsIgnoreCase(request.getCategoryName()) &&
                 categoryRepository.existsByName(request.getCategoryName())) {
             log.warn("Category with name: {} already exists", request.getCategoryName());
-            throw new ConflictException(ErrorDetailHelper.categoryNameAlreadyExists());
+            throw new ConflictException(ErrorDetailHelper.alreadyExistsSingletonList("categoryName"));
         }
 
         categoryEntity.setName(request.getCategoryName());
@@ -102,7 +104,8 @@ public class CategoryService {
     @Transactional
     public RestResponse<Object> deleteCategory(String categoryName) {
         CategoryEntity categoryEntity = categoryRepository.findByName(categoryName)
-                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.categoryNameNotFound()));
+                .orElseThrow(() -> new NotFoundException(
+                        ErrorDetailHelper.notFoundSingletonList("categoryName")));
 
         productCategoriesRepository.deleteAll(categoryEntity.getProductCategoryEntities());
         categoryRepository.delete(categoryEntity);

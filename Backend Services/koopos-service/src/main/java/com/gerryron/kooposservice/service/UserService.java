@@ -44,11 +44,11 @@ public class UserService {
         if (userRepository.existsByUsernameOrEmail(request.getUsername(), request.getEmail())) {
             log.warn("User with username: {} or email: {} already exists",
                     request.getUsername(), request.getEmail());
-            throw new ConflictException(ErrorDetailHelper.userAlreadyExists());
+            throw new ConflictException(ErrorDetailHelper.alreadyExistsSingletonList("username or email"));
         }
         if (!roleRepository.existsById(request.getRole())) {
             log.warn("User with username: {} has an invalid role", request.getUsername());
-            throw new NotFoundException(ErrorDetailHelper.userInvalidRole());
+            throw new NotFoundException(ErrorDetailHelper.notFoundSingletonList("role"));
         }
 
         UserEntity userEntity = new UserEntity();
@@ -77,7 +77,8 @@ public class UserService {
     public RestResponse<SignInResponse> signIn(SignInRequest request) {
         UserEntity userEntity = userRepository
                 .findByUsernameOrEmail(request.getUsername(), request.getEmail())
-                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.userNotFound()));
+                .orElseThrow(() -> new NotFoundException(
+                        ErrorDetailHelper.notFoundSingletonList("username or email")));
 
         try {
             Authentication authentication = authenticationManager

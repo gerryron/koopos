@@ -8,6 +8,7 @@ import com.gerryron.kooposservice.entity.CategoryEntity;
 import com.gerryron.kooposservice.entity.ProductCategoryEntity;
 import com.gerryron.kooposservice.entity.ProductEntity;
 import com.gerryron.kooposservice.enums.ApplicationCode;
+import com.gerryron.kooposservice.exception.BadRequestException;
 import com.gerryron.kooposservice.exception.ConflictException;
 import com.gerryron.kooposservice.exception.NotFoundException;
 import com.gerryron.kooposservice.helper.ErrorDetailHelper;
@@ -40,7 +41,7 @@ public class ProductService {
     public RestResponse<Object> createProduct(ProductRequest request) {
         if (productRepository.existsByBarcode(request.getBarcode())) {
             log.warn("Product with barcode: {} already exists", request.getBarcode());
-            throw new ConflictException(ErrorDetailHelper.barcodeAlreadyExists());
+            throw new ConflictException(ErrorDetailHelper.alreadyExistsSingletonList("barcode"));
         }
 
         ProductEntity productEntity = new ProductEntity();
@@ -55,7 +56,8 @@ public class ProductService {
 
         for (String category : request.getCategories()) {
             CategoryEntity categoryEntity = categoryRepository.findByName(category)
-                    .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.categoryNameNotFound()));
+                    .orElseThrow(() -> new BadRequestException(
+                            ErrorDetailHelper.invalidInputSingletonList("categories")));
 
             ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
             ProductCategoryEntity.CompositeKey compositeKey = new ProductCategoryEntity.CompositeKey();
@@ -96,7 +98,7 @@ public class ProductService {
     @Transactional
     public RestResponse<ProductResponse> findProduct(String barcode) {
         ProductEntity productEntity = productRepository.findByBarcode(barcode)
-                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.barcodeNotFound()));
+                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.notFoundSingletonList("barcode")));
 
         return RestResponse.<ProductResponse>builder()
                 .responseStatus(ApplicationCode.SUCCESS)
@@ -107,12 +109,12 @@ public class ProductService {
     @Transactional
     public RestResponse<Object> updateProduct(String barcode, ProductRequest request) {
         ProductEntity productEntity = productRepository.findByBarcode(barcode)
-                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.barcodeNotFound()));
+                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.notFoundSingletonList("barcode")));
         // validate if barcode wants to be replaced
         if (!barcode.equalsIgnoreCase(request.getBarcode()) &&
                 productRepository.existsByBarcode(request.getBarcode())) {
             log.warn("Product with barcode: {} already exists", request.getBarcode());
-            throw new ConflictException(ErrorDetailHelper.barcodeAlreadyExists());
+            throw new ConflictException(ErrorDetailHelper.alreadyExistsSingletonList("barcode"));
         }
 
         productEntity.setBarcode(request.getBarcode());
@@ -126,7 +128,8 @@ public class ProductService {
 
         for (String category : request.getCategories()) {
             CategoryEntity categoryEntity = categoryRepository.findByName(category)
-                    .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.categoryNameNotFound()));
+                    .orElseThrow(() -> new BadRequestException(
+                            ErrorDetailHelper.invalidInputSingletonList("categories")));
 
             ProductCategoryEntity productCategoryEntity = new ProductCategoryEntity();
             ProductCategoryEntity.CompositeKey compositeKey = new ProductCategoryEntity.CompositeKey();
@@ -148,7 +151,7 @@ public class ProductService {
     @Transactional
     public RestResponse<Object> deleteProduct(String barcode) {
         ProductEntity productEntity = productRepository.findByBarcode(barcode)
-                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.barcodeNotFound()));
+                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.notFoundSingletonList("barcode")));
 
         productCategoriesRepository.deleteAll(productEntity.getProductCategoryEntities());
         productRepository.delete(productEntity);

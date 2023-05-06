@@ -55,10 +55,11 @@ public class OrderService {
         List<ErrorDetail> outOfStockProductError = new ArrayList<>();
         for (OrderRequest.ProductPurchased productPurchased : request.getProductsPurchased()) {
             ProductEntity productEntity = productRepository.findByBarcode(productPurchased.getBarcode())
-                    .orElseThrow(() -> new BadRequestException(ErrorDetailHelper.barcodeNotFound()));
+                    .orElseThrow(() -> new BadRequestException(
+                            ErrorDetailHelper.notFoundSingletonList("barcode")));
             if (productEntity.getQuantity() < productPurchased.getQuantity()) {
                 outOfStockProductError.add(ErrorDetailHelper
-                        .invalidTransactionProductQuantity(productEntity.getProductName()));
+                        .productOutOfStock(productEntity.getProductName()));
             }
             if (!outOfStockProductError.isEmpty()) continue;
 
@@ -88,7 +89,8 @@ public class OrderService {
 
     public RestResponse<Object> cancelOrder(CancelOrderRequest request) {
         OrderEntity orderEntity = orderRepository.findByOrderNumber(request.getOrderNumber())
-                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.orderNotFound()));
+                .orElseThrow(() -> new NotFoundException(
+                        ErrorDetailHelper.notFoundSingletonList("orderNumber")));
         orderEntity.setStatus(OrderStatus.CANCELED);
         orderEntity.setDescription(request.getDescription());
         orderEntity.setUpdatedDate(LocalDateTime.now());
@@ -103,6 +105,6 @@ public class OrderService {
         final AuthUserDetails authUserDetails = (AuthUserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         return userRepository.findByUsername(authUserDetails.getUsername())
-                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.userNotFound()));
+                .orElseThrow(() -> new NotFoundException(ErrorDetailHelper.notFoundSingletonList("username")));
     }
 }
